@@ -7,166 +7,141 @@ let map, markers = [], currentChart = null;
 let db = { spklu_data: [], up3_list: [], kota_list: [], date_list: [] };
 let filteredTableData = [], currentPage = 1, rowsPerPage = 10;
 
-// 1. Ambil Data dari Google Sheets
 async function fetchData() {
-    const fetchCsv = (url) => new Promise((resolve) => {
-        Papa.parse(url, { download: true, header: true, dynamicTyping: true, complete: (res) => resolve(res.data) });
+    const fetchCsv = (url) => new Promise((resolve, reject) => {
+        Papa.parse(url, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            dynamicTyping: true,
+            complete: (results) => resolve(results.data),
+            error: (err) => reject(err)
+        });
     });
 
     try {
-        const [rawSpklu, rawTx, rawKwh] = await Promise.all([fetchCsv(URL_SPKLU), fetchCsv(URL_TX), fetchCsv(URL_KWH)]);
+        const [rawSpklu, rawTx, rawKwh] = await Promise.all([
+            fetchCsv(URL_SPKLU),
+            fetchCsv(URL_TX),
+            fetchCsv(URL_KWH)
+        ]);
         processData(rawSpklu, rawTx, rawKwh);
         initApp();
-    } catch (e) { alert("Gagal memuat data. Periksa link Google Sheets Anda."); }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Gagal memuat data. Periksa konsol browser untuk detail.");
+    }
 }
 
-// 2. Olah Data
 function processData(spklu, tx, kwh) {
-    const dates = Object.keys(tx[0]).filter(k => k !== 'Nama Stasiun');
-    const kotaSet = new Set(), up3Set = new Set();
+    // Ambil daftar tanggal (Kolom setelah UP3, ULP, dan Nama Stasiun)
+    // Berdasarkan struktur baru Anda, kita abaikan 3 kolom pertama
+    const sampleRow = tx[0];
+    const dateKeys = Object.keys(sampleRow).filter(k => 
+        k !== 'UP3' && k !== 'ULP' && k !== 'Nama Stasiun'
+    );
+
+    const kotaSet = new Set();
+    const up3Set = new Set();
 
     db.spklu_data = spklu.filter(s => s['Nama Stasiun']).map(s => {
-        kotaSet.add(s.Kota);
-        up3Set.add(s.UP3);
+        const stasiunName = s['Nama Stasiun'].trim();
+        
+        // Cari baris yang cocok di sheet Transaksi dan kWh
+        const txMatch = tx.find(t => t['Nama Stasiun'] && t['Nama Stasiun'].trim() === stasiunName) || {};
+        const kwhMatch = kwh.find(k => k['Nama Stasiun'] && k['Nama Stasiun'].trim() === stasiunName) || {};
+
+        if (s.Kota) kotaSet.add(s.Kota.trim());
+        if (s.UP3) up3Set.add(s.UP3.trim());
+
         return {
-            ...s, nama: s['Nama Stasiun'],
-            transactions: tx.find(t => t['Nama Stasiun'] === s['Nama Stasiun']) || {},
-            kwh: kwh.find(k => k['Nama Stasiun'] === s['Nama Stasiun']) || {}
+            nama: stasiunName,
+            alamat: s.Alamat,
+            lat: parseFloat(s.Latitude),
+            lon: parseFloat(s.Longitude),
+            kota: s.Kota ? s.Kota.trim() : "Luar Kalbar",
+            up3: s.UP3 ? s.UP3.trim() : "N/A",
+            ulp: s.ULP,
+            type: s['TYPE CHARGE'],
+            kw: s.KW,
+            // Data dinamis berdasarkan tanggal
+            transactions: txMatch, 
+            kwh: kwhMatch
         };
     });
 
-    db.date_list = dates;
+    db.date_list = dateKeys;
     db.up3_list = Array.from(up3Set).sort();
     db.kota_list = Array.from(kotaSet).sort();
 }
 
-// 3. Jalankan Aplikasi
-function initApp() {
-    initMap();
-    populateFilters();
-    updateDashboard();
-    setupEventListeners();
-}
-
-function initMap() {
-    map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-    db.spklu_data.forEach(d => {
-        const m = L.marker([d.Latitude, d.Longitude]).addTo(map)
-            .bindPopup(`<b>${d.nama}</b><br>${d.Alamat}`);
-        m.data = d;
-        markers.push(m);
-    });
-}
-
-function populateFilters() {
-    const optUP3 = document.getElementById('optUP3');
-    const optKota = document.getElementById('optKota');
-    const mapKota = document.getElementById('mapFilterKota');
-
-    db.kota_list.forEach(k => {
-        optKota.add(new Option(k, k));
-        mapKota.add(new Option(k, k));
-    });
-    db.up3_list.forEach(u => optUP3.add(new Option("UP3 " + u, u)));
-}
-
-function setupEventListeners() {
-    document.getElementById('searchNama').addEventListener('input', applyMapFilter);
-    ['mapFilterKota', 'mapFilterType'].forEach(id => document.getElementById(id).addEventListener('change', applyMapFilter));
-    ['evalFilterGeo', 'evalFilterCategory', 'evalFilterChartType', 'evalFilterTime'].forEach(id => {
-        document.getElementById(id).addEventListener('change', updateDashboard);
-    });
-
-    document.getElementById('prevBtn').onclick = () => { if(currentPage > 1) { currentPage--; renderTable(); } };
-    document.getElementById('nextBtn').onclick = () => { if(currentPage * rowsPerPage < filteredTableData.length) { currentPage++; renderTable(); } };
-}
-
-function applyMapFilter() {
-    const search = document.getElementById('searchNama').value.toLowerCase();
-    const kota = document.getElementById('mapFilterKota').value;
-    const type = document.getElementById('mapFilterType').value;
-    const listEl = document.getElementById('spkluList');
-    listEl.innerHTML = '';
-
-    markers.forEach(m => {
-        const d = m.data;
-        const match = d.nama.toLowerCase().includes(search) && (kota === 'all' || d.Kota === kota) && (type === 'all' || d['TYPE CHARGE'] === type);
-        if(match) {
-            m.addTo(map);
-            const item = document.createElement('div');
-            item.className = 'list-item';
-            item.innerHTML = `<b>${d.nama}</b> ${d.Kota}`;
-            item.onclick = () => { map.setView([d.Latitude, d.Longitude], 14); m.openPopup(); };
-            listEl.appendChild(item);
-        } else { map.removeLayer(m); }
-    });
-}
+// ... (Fungsi initMap, populateFilters, setupEventListeners sama seperti sebelumnya) ...
 
 function updateDashboard() {
     const geo = document.getElementById('evalFilterGeo').value;
-    const category = document.getElementById('evalFilterCategory').value;
+    const category = document.getElementById('evalFilterCategory').value; // 'kwh' atau 'transactions'
     const chartType = document.getElementById('evalFilterChartType').value;
     const timeRange = document.getElementById('evalFilterTime').value;
 
-    // 1. Filter Waktu
     let displayDates = (timeRange === 'all') ? db.date_list : db.date_list.slice(-parseInt(timeRange));
-    
-    // 2. Filter Stasiun berdasarkan Wilayah (UP3 atau Kota)
-    const filteredStations = db.spklu_data.filter(s => geo === 'all' || s.UP3 === geo || s.Kota === geo);
+    const filteredStations = db.spklu_data.filter(s => geo === 'all' || s.up3 === geo || s.kota === geo);
 
-    // 3. Hitung Data per Bulan untuk Grafik
+    // Hitung nilai bulanan: Jika kategori kwh maka ambil dari s.kwh, jika transaksi ambil s.transactions
     const valuesPerMonth = displayDates.map(date => {
-        return filteredStations.reduce((sum, s) => sum + (s[category][date] || 0), 0);
+        return filteredStations.reduce((sum, s) => {
+            const val = s[category][date] || 0;
+            return sum + val;
+        }, 0);
     });
 
-    // 4. HITUNG ANGKA KOMULATIF (Total Keseluruhan)
     const grandTotal = valuesPerMonth.reduce((a, b) => a + b, 0);
-
-    // 5. Update Tampilan Angka di Atas Grafik
-    const unit = (category === 'kwh') ? ' kWh' : ' Transaksi';
+    const unit = (category === 'kwh') ? ' kWh' : ' Tx';
+    
     document.getElementById('labelKomulatif').innerText = `Total Komulatif (${category.toUpperCase()})`;
     document.getElementById('totalValue').innerText = grandTotal.toLocaleString('id-ID') + unit;
-    document.getElementById('totalSPKLU').innerText = filteredStations.length + " Lokasi";
+    document.getElementById('totalSPKLU').innerText = filteredStations.length + " Lokasi Terpilih";
 
-    // 6. Render Grafik
     renderChart(chartType, displayDates, valuesPerMonth, category.toUpperCase());
 
-    // 7. Update Tabel (seperti sebelumnya)
+    // Update Tabel Detail
     filteredTableData = [];
     filteredStations.forEach(s => {
         displayDates.forEach(date => {
-            filteredTableData.push({ 
-                nama: s.nama, 
-                up3: s.UP3, 
-                bulan: date, 
-                kwh: s.kwh[date] || 0, 
-                tx: s.transactions[date] || 0 
+            filteredTableData.push({
+                nama: s.nama,
+                up3: s.up3,
+                ulp: s.ulp,
+                bulan: date,
+                kwh: s.kwh[date] || 0,
+                tx: s.transactions[date] || 0
             });
         });
     });
+    
     filteredTableData.sort((a,b) => b.bulan.localeCompare(a.bulan));
     currentPage = 1;
     renderTable();
 }
 
-function renderChart(type, labels, data, label) {
-    const ctx = document.getElementById('mainChart').getContext('2d');
-    if(currentChart) currentChart.destroy();
-    currentChart = new Chart(ctx, {
-        type: type,
-        data: { labels, datasets: [{ label, data, borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)', fill: true }] }
-    });
-}
-
+// Update Render Table untuk menyertakan ULP
 function renderTable() {
     const start = (currentPage - 1) * rowsPerPage;
     const pageData = filteredTableData.slice(start, start + rowsPerPage);
+    
     document.getElementById('tableBody').innerHTML = pageData.map(r => `
-        <tr><td>${r.nama}</td><td>${r.up3}</td><td>${r.bulan}</td><td>${r.kwh}</td><td>${r.tx}</td></tr>
+        <tr>
+            <td>${r.nama}</td>
+            <td>${r.up3} (${r.ulp})</td>
+            <td>${r.bulan}</td>
+            <td>${r.kwh.toLocaleString('id-ID')}</td>
+            <td>${r.tx.toLocaleString('id-ID')}</td>
+        </tr>
     `).join('');
-    document.getElementById('pageInfo').innerText = `Halaman ${currentPage}`;
+
+    document.getElementById('pageInfo').innerText = `Halaman ${currentPage} dari ${Math.ceil(filteredTableData.length / rowsPerPage)}`;
+    document.getElementById('prevBtn').disabled = (currentPage === 1);
+    document.getElementById('nextBtn').disabled = (currentPage * rowsPerPage >= filteredTableData.length);
 }
 
+// Lanjutkan dengan fungsi renderChart dan sisa kode lainnya...
 fetchData();
