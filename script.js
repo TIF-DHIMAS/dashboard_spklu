@@ -34,10 +34,10 @@ async function fetchData() {
 }
 
 function processData(spklu, tx, kwh) {
-    // Ambil daftar tanggal (Kolom setelah UP3, ULP, dan Nama Stasiun)
-    // Berdasarkan struktur baru Anda, kita abaikan 3 kolom pertama
-    const sampleRow = tx[0];
-    const dateKeys = Object.keys(sampleRow).filter(k => 
+    // 1. Ambil daftar tanggal (Kolom setelah UP3, ULP, dan Nama Stasiun)
+    // Kita ambil dari header sheet TX mulai dari kolom ke-4 (indeks 3)
+    const headers = Object.keys(tx[0]);
+    const dateKeys = headers.filter(k => 
         k !== 'UP3' && k !== 'ULP' && k !== 'Nama Stasiun'
     );
 
@@ -45,9 +45,9 @@ function processData(spklu, tx, kwh) {
     const up3Set = new Set();
 
     db.spklu_data = spklu.filter(s => s['Nama Stasiun']).map(s => {
-        const stasiunName = s['Nama Stasiun'].trim();
+        const stasiunName = s['Nama Stasiun'] ? s['Nama Stasiun'].trim() : "";
         
-        // Cari baris yang cocok di sheet Transaksi dan kWh
+        // Cari data transaksi & kwh yang cocok berdasarkan Nama Stasiun
         const txMatch = tx.find(t => t['Nama Stasiun'] && t['Nama Stasiun'].trim() === stasiunName) || {};
         const kwhMatch = kwh.find(k => k['Nama Stasiun'] && k['Nama Stasiun'].trim() === stasiunName) || {};
 
@@ -59,12 +59,11 @@ function processData(spklu, tx, kwh) {
             alamat: s.Alamat,
             lat: parseFloat(s.Latitude),
             lon: parseFloat(s.Longitude),
-            kota: s.Kota ? s.Kota.trim() : "Luar Kalbar",
+            kota: s.Kota ? s.Kota.trim() : "N/A",
             up3: s.UP3 ? s.UP3.trim() : "N/A",
-            ulp: s.ULP,
+            ulp: s.ULP ? s.ULP.trim() : "N/A",
             type: s['TYPE CHARGE'],
             kw: s.KW,
-            // Data dinamis berdasarkan tanggal
             transactions: txMatch, 
             kwh: kwhMatch
         };
@@ -73,8 +72,9 @@ function processData(spklu, tx, kwh) {
     db.date_list = dateKeys;
     db.up3_list = Array.from(up3Set).sort();
     db.kota_list = Array.from(kotaSet).sort();
+    
+    console.log("Data berhasil diproses. Kolom tanggal terdeteksi:", db.date_list);
 }
-
 // ... (Fungsi initMap, populateFilters, setupEventListeners sama seperti sebelumnya) ...
 
 function updateDashboard() {
