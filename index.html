@@ -2,40 +2,119 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; style-src * 'unsafe-inline';">
     <title>Monitoring SPKLU Kalimantan Barat</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        body { margin:0; font-family: 'Segoe UI', sans-serif; background: #f4f7f6; scroll-behavior: smooth; }
+        
+        /* Navbar */
+        .navbar {
+            position: fixed; top: 0; width: 100%; height: 50px;
+            background: #1e88e5; color: white; display: flex;
+            align-items: center; justify-content: space-between;
+            padding: 0 20px; z-index: 2000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .navbar b { font-size: 18px; }
+        .navbar .menu a {
+            color: white; text-decoration: none; font-weight: bold;
+            padding: 8px 15px; border-radius: 4px; transition: 0.3s;
+        }
+        .navbar .menu a:hover { background: rgba(255,255,255,0.2); }
+
+        /* Layer 1: Map */
+        #map-container { height: 100vh; position: relative; padding-top: 50px; box-sizing: border-box; }
+        #map { height: 100%; width: 100%; z-index: 1; }
+
+        /* Panel Pencarian - Perbaikan Lebar */
+        .panel {
+            position: absolute; top: 70px; left: 20px; z-index: 1000;
+            background: white; padding: 15px; border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25); 
+            width: 280px; /* Lebar dibatasi agar tidak terlalu lebar */
+            max-height: 80vh; overflow-y: auto;
+        }
+        .panel h3 { margin: 0 0 10px 0; font-size: 16px; border-bottom: 2px solid #1e88e5; padding-bottom: 5px; }
+        .panel label { font-size: 11px; font-weight: bold; display: block; margin-top: 8px; color: #555; }
+        .panel input, .panel select { 
+            width: 100%; padding: 7px; margin-top: 3px; 
+            border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; 
+            font-size: 13px;
+        }
+        
+        .list { margin-top: 15px; border-top: 1px solid #ddd; }
+        .list-item { padding: 10px; font-size: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .list-item:hover { background: #f0f7ff; }
+        .list-item b { display: block; color: #1e88e5; font-size: 13px; }
+
+        /* Layer 2: Evaluation */
+        #evaluation-layer { min-height: 100vh; padding: 80px 20px; background: #fff; }
+        .container { max-width: 1100px; margin: auto; }
+        
+        /* Summary Box */
+        .summary-grid { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .sum-card { 
+            background: #fff; padding: 15px; border-radius: 8px; flex: 1; min-width: 200px;
+            border-left: 5px solid #1e88e5; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .sum-card span { font-size: 12px; color: #666; font-weight: bold; }
+        .sum-card h2 { margin: 5px 0 0 0; color: #1e88e5; font-size: 22px; }
+
+        .filter-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px; background: #f9f9f9; padding: 15px; border-radius: 8px;
+            border: 1px solid #eee; margin-bottom: 20px;
+        }
+        .filter-item label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; }
+        .filter-item select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+
+        .chart-box { background: white; padding: 20px; border-radius: 8px; border: 1px solid #eee; height: 400px; }
+        
+        /* Table */
+        .table-container { overflow-x: auto; margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; background: white; }
+        table th { background: #1e88e5; color: white; padding: 12px; text-align: left; position: sticky; top: 0; }
+        table td { padding: 10px; border-bottom: 1px solid #eee; }
+        table tr:hover { background: #f5f5f5; }
+
+        .pagination { display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 10px; }
+        .pagination button { padding: 6px 12px; border: 1px solid #1e88e5; background: white; color: #1e88e5; border-radius: 4px; cursor: pointer; }
+        .pagination button:disabled { border-color: #ccc; color: #ccc; cursor: not-allowed; }
+        .pagination span { font-size: 13px; font-weight: bold; }
+
+        /* Popup Styles */
+        .btn-rute {
+            display: inline-block; margin-top: 8px; padding: 6px 12px;
+            background: #1e88e5; color: white !important; text-decoration: none;
+            border-radius: 4px; font-size: 11px; font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
     <div class="navbar">
-        <b>Monitoring SPKLU Kalbar</b>
+        <b>PLN UID Kalbar - SPKLU</b>
         <div class="menu">
             <a href="#map-container">Peta Lokasi</a>
-            <a href="#evaluation-layer">Evaluasi</a>
+            <a href="#evaluation-layer">Evaluasi Data</a>
         </div>
     </div>
 
     <div id="map-container">
         <div class="panel">
-            <h3>Pencarian SPKLU</h3>
+            <h3>Pencarian & Filter</h3>
             <label>Nama SPKLU</label>
-            <input type="text" id="searchNama" placeholder="Cari nama...">
+            <input type="text" id="searchNama" placeholder="Ketik nama stasiun...">
             
+            <label>Filter UP3</label>
+            <select id="mapFilterUP3">
+                <option value="all">Semua UP3</option>
+            </select>
+
             <label>Kabupaten / Kota</label>
             <select id="mapFilterKota">
                 <option value="all">Semua Kota</option>
             </select>
-<label>UP3</label>
-<select id="mapFilterUP3">
-    <option value="all">Semua UP3</option>
-</select>
 
-<label>Kabupaten / Kota</label>
-<select id="mapFilterKota">
-    <option value="all">Semua Kota</option>
-</select>
             <label>Tipe Charging</label>
             <select id="mapFilterType">
                 <option value="all">Semua Tipe</option>
@@ -51,11 +130,22 @@
 
     <div id="evaluation-layer">
         <div class="container">
-            <h2 style="text-align: center;">Dashboard Evaluasi SPKLU</h2>
+            <h2 style="text-align: center; color: #333; margin-bottom: 30px;">Dashboard Evaluasi SPKLU</h2>
             
+            <div class="summary-grid">
+                <div class="sum-card">
+                    <span id="labelKomulatif">Total Komulatif</span>
+                    <h2 id="totalValue">0</h2>
+                </div>
+                <div class="sum-card" style="border-left-color: #43a047;">
+                    <span>Lokasi SPKLU</span>
+                    <h2 id="totalSPKLU" style="color: #43a047;">0</h2>
+                </div>
+            </div>
+
             <div class="filter-grid">
                 <div class="filter-item">
-                    <label>Filter Wilayah (UP3 / Kota)</label>
+                    <label>UP3 / Kota</label>
                     <select id="evalFilterGeo">
                         <option value="all">Semua Wilayah</option>
                         <optgroup label="UP3" id="optUP3"></optgroup>
@@ -63,21 +153,21 @@
                     </select>
                 </div>
                 <div class="filter-item">
-                    <label>Kategori Laporan</label>
+                    <label>Kategori</label>
                     <select id="evalFilterCategory">
-                        <option value="kwh">Jumlah kWh Usage</option>
-                        <option value="transactions">Jumlah Transaksi</option>
+                        <option value="kwh">kWh Usage</option>
+                        <option value="transactions">Transaksi</option>
                     </select>
                 </div>
                 <div class="filter-item">
                     <label>Jenis Grafik</label>
                     <select id="evalFilterChartType">
-                        <option value="line">Grafik Garis (Line)</option>
-                        <option value="bar">Grafik Batang (Bar)</option>
+                        <option value="line">Line Chart</option>
+                        <option value="bar">Bar Chart</option>
                     </select>
                 </div>
                 <div class="filter-item">
-                    <label>Kategori Waktu</label>
+                    <label>Periode</label>
                     <select id="evalFilterTime">
                         <option value="12">1 Tahun Terakhir</option>
                         <option value="24">2 Tahun Terakhir</option>
@@ -86,28 +176,17 @@
                 </div>
             </div>
 
-<div class="chart-box">
-        <div id="summary-container" style="display: flex; gap: 20px; margin-bottom: 20px;">
-                <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; flex: 1; border-left: 5px solid #1e88e5;">
-                <span style="font-size: 14px; color: #555; font-weight: bold;" id="labelKomulatif">Total Komulatif</span>
-                <h2 style="margin: 5px 0; color: #1e88e5;" id="totalValue">0</h2>
-                </div>
-            <div style="background: #f1f8e9; padding: 15px; border-radius: 8px; flex: 1; border-left: 5px solid #43a047;">
-            <span style="font-size: 14px; color: #555; font-weight: bold;">Jumlah SPKLU Terfilter</span>
-            <h2 style="margin: 5px 0; color: #43a047;" id="totalSPKLU">0</h2>
+            <div class="chart-box">
+                <canvas id="mainChart"></canvas>
             </div>
-        </div>
-    
-    <canvas id="mainChart" height="100"></canvas>
-</div>
 
-            <h3>Detail Transaksi Bulanan</h3>
+            <h3 style="margin-top: 40px;">Rincian Data Bulanan</h3>
             <div class="table-container">
-                <table id="detailTable">
+                <table>
                     <thead>
                         <tr>
                             <th>Nama SPKLU</th>
-                            <th>UP3</th>
+                            <th>UP3 (ULP)</th>
                             <th>Bulan</th>
                             <th>kWh</th>
                             <th>Transaksi</th>
@@ -117,9 +196,9 @@
                 </table>
             </div>
             <div class="pagination">
-                <button id="prevBtn">Previous</button>
+                <button id="prevBtn">Sebelumnya</button>
                 <span id="pageInfo">Halaman 1</span>
-                <button id="nextBtn">Next</button>
+                <button id="nextBtn">Selanjutnya</button>
             </div>
         </div>
     </div>
@@ -127,6 +206,228 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <script src="script.js"></script>
+
+    <script>
+        // --- KONFIGURASI LINK ---
+        const URL_SPKLU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=650444376&single=true&output=csv';
+        const URL_TX = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=2044243535&single=true&output=csv';
+        const URL_KWH = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1058603642&single=true&output=csv';
+
+        let map, markers = [], currentChart = null;
+        let db = { spklu_data: [], up3_list: [], kota_list: [], date_list: [] };
+        let filteredTableData = [], currentPage = 1, rowsPerPage = 10;
+
+        const cleanKey = (k) => k ? k.replace(/^\ufeff/g, "").trim() : "";
+
+        // --- FETCH DATA ---
+        async function fetchData() {
+            const fetchCsv = (url) => new Promise((resolve, reject) => {
+                Papa.parse(url, {
+                    download: true, header: true, skipEmptyLines: 'greedy', transformHeader: cleanKey,
+                    complete: (res) => resolve(res.data),
+                    error: (err) => reject(err)
+                });
+            });
+
+            try {
+                const [rawSpklu, rawTx, rawKwh] = await Promise.all([
+                    fetchCsv(URL_SPKLU), fetchCsv(URL_TX), fetchCsv(URL_KWH)
+                ]);
+                processData(rawSpklu, rawTx, rawKwh);
+                initApp(); 
+            } catch (error) {
+                console.error("Gagal memuat data:", error);
+            }
+        }
+
+        // --- PROCESSING ---
+        function processData(spklu, tx, kwh) {
+            const headers = Object.keys(tx[0]);
+            const dateKeys = headers.filter(k => k !== 'UP3' && k !== 'ULP' && k !== 'Nama Stasiun');
+
+            const kotaSet = new Set(), up3Set = new Set();
+
+            db.spklu_data = spklu.filter(s => s['Nama Stasiun']).map(s => {
+                const name = s['Nama Stasiun'].toString().trim();
+                const txMatch = tx.find(t => t['Nama Stasiun'] && t['Nama Stasiun'].trim() === name) || {};
+                const kwhMatch = kwh.find(k => k['Nama Stasiun'] && k['Nama Stasiun'].trim() === name) || {};
+
+                if (s.Kota) kotaSet.add(s.Kota.trim());
+                if (s.UP3) up3Set.add(s.UP3.toString().trim());
+
+                return {
+                    nama: name, alamat: s.Alamat, lat: parseFloat(s.Latitude), lon: parseFloat(s.Longitude),
+                    kota: s.Kota ? s.Kota.trim() : "N/A", up3: s.UP3 ? s.UP3.toString().trim() : "N/A",
+                    ulp: s.ULP ? s.ULP.toString().trim() : "N/A", type: s['TYPE CHARGE'], kw: s.KW,
+                    transactions: txMatch, kwh: kwhMatch
+                };
+            });
+
+            db.date_list = dateKeys;
+            db.up3_list = Array.from(up3Set).sort();
+            db.kota_list = Array.from(kotaSet).sort();
+        }
+
+        // --- INITIALIZATION ---
+        function initApp() {
+            map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 7);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+            db.spklu_data.forEach(d => {
+                if (!isNaN(d.lat)) {
+                    // Google Maps Directions Link
+                    const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}`;
+                    const m = L.marker([d.lat, d.lon]).addTo(map).bindPopup(`
+                        <div style="min-width:150px;">
+                            <b style="color:#1e88e5;">${d.nama}</b><br>
+                            <span style="font-size:11px;">${d.alamat}</span><br>
+                            <a href="${gmapsUrl}" target="_blank" class="btn-rute">📍 Petunjuk Rute</a>
+                        </div>
+                    `);
+                    m.data = d;
+                    markers.push(m);
+                }
+            });
+
+            // Fill Dropdowns
+            const mapUP3 = document.getElementById('mapFilterUP3');
+            const mapKota = document.getElementById('mapFilterKota');
+            const optUP3 = document.getElementById('optUP3');
+            const optKota = document.getElementById('optKota');
+
+            db.up3_list.forEach(u => {
+                mapUP3.add(new Option(u, u));
+                optUP3.add(new Option("UP3 " + u, u));
+            });
+            db.kota_list.forEach(k => {
+                mapKota.add(new Option(k, k));
+                optKota.add(new Option(k, k));
+            });
+
+            setupEventListeners();
+            updateDashboard();
+            applyMapFilter();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('searchNama').addEventListener('input', applyMapFilter);
+            ['mapFilterUP3', 'mapFilterKota', 'mapFilterType'].forEach(id => {
+                document.getElementById(id).addEventListener('change', applyMapFilter);
+            });
+            ['evalFilterGeo', 'evalFilterCategory', 'evalFilterChartType', 'evalFilterTime'].forEach(id => {
+                document.getElementById(id).addEventListener('change', updateDashboard);
+            });
+
+            document.getElementById('prevBtn').onclick = () => { if(currentPage > 1) { currentPage--; renderTable(); } };
+            document.getElementById('nextBtn').onclick = () => { if(currentPage * rowsPerPage < filteredTableData.length) { currentPage++; renderTable(); } };
+        }
+
+        // --- FILTERING MAP ---
+        function applyMapFilter() {
+            const search = document.getElementById('searchNama').value.toLowerCase();
+            const up3 = document.getElementById('mapFilterUP3').value;
+            const kota = document.getElementById('mapFilterKota').value;
+            const type = document.getElementById('mapFilterType').value;
+            const listEl = document.getElementById('spkluList');
+            listEl.innerHTML = '';
+
+            markers.forEach(m => {
+                const d = m.data;
+                const match = d.nama.toLowerCase().includes(search) && 
+                              (up3 === 'all' || d.up3 === up3) &&
+                              (kota === 'all' || d.kota === kota) && 
+                              (type === 'all' || d.type === type);
+                
+                if(match) {
+                    m.addTo(map);
+                    const item = document.createElement('div');
+                    item.className = 'list-item';
+                    item.innerHTML = `<b>${d.nama}</b> ${d.up3} - ${d.kota}`;
+                    item.onclick = () => { map.setView([d.lat, d.lon], 14); m.openPopup(); };
+                    listEl.appendChild(item);
+                } else {
+                    map.removeLayer(m);
+                }
+            });
+        }
+
+        // --- DASHBOARD LOGIC ---
+        function updateDashboard() {
+            const geo = document.getElementById('evalFilterGeo').value;
+            const category = document.getElementById('evalFilterCategory').value;
+            const chartType = document.getElementById('evalFilterChartType').value;
+            const timeRange = document.getElementById('evalFilterTime').value;
+
+            let displayDates = (timeRange === 'all') ? db.date_list : db.date_list.slice(-parseInt(timeRange));
+            const filteredStations = db.spklu_data.filter(s => geo === 'all' || s.up3 === geo || s.kota === geo);
+
+            const valuesPerMonth = displayDates.map(date => {
+                return filteredStations.reduce((sum, s) => {
+                    const val = s[category][date];
+                    const num = typeof val === 'string' ? parseFloat(val.replace(',', '.')) : parseFloat(val);
+                    return sum + (num || 0);
+                }, 0);
+            });
+
+            const grandTotal = valuesPerMonth.reduce((a, b) => a + b, 0);
+            document.getElementById('labelKomulatif').innerText = `Total Komulatif (${category.toUpperCase()})`;
+            document.getElementById('totalValue').innerText = grandTotal.toLocaleString('id-ID') + (category === 'kwh' ? ' kWh' : ' Tx');
+            document.getElementById('totalSPKLU').innerText = filteredStations.length + " Lokasi Terpilih";
+
+            renderChart(chartType, displayDates, valuesPerMonth, category.toUpperCase());
+
+            filteredTableData = [];
+            filteredStations.forEach(s => {
+                displayDates.forEach(date => {
+                    const kVal = typeof s.kwh[date] === 'string' ? parseFloat(s.kwh[date].replace(',','.')) : parseFloat(s.kwh[date]);
+                    const tVal = typeof s.transactions[date] === 'string' ? parseFloat(s.transactions[date].replace(',','.')) : parseFloat(s.transactions[date]);
+                    filteredTableData.push({
+                        nama: s.nama, up3: s.up3, ulp: s.ulp, bulan: date,
+                        kwh: kVal || 0, tx: tVal || 0
+                    });
+                });
+            });
+            filteredTableData.sort((a,b) => b.bulan.localeCompare(a.bulan));
+            currentPage = 1;
+            renderTable();
+        }
+
+        function renderChart(type, labels, data, label) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            if(currentChart) currentChart.destroy();
+            currentChart = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels,
+                    datasets: [{ 
+                        label, data, borderColor: '#1e88e5', backgroundColor: 'rgba(30, 136, 229, 0.2)', 
+                        fill: true, tension: 0.3, borderWidth: 3, pointRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function renderTable() {
+            const start = (currentPage - 1) * rowsPerPage;
+            const pageData = filteredTableData.slice(start, start + rowsPerPage);
+            document.getElementById('tableBody').innerHTML = pageData.map(r => `
+                <tr>
+                    <td>${r.nama}</td>
+                    <td>${r.up3} (${r.ulp})</td>
+                    <td>${r.bulan}</td>
+                    <td>${r.kwh.toLocaleString('id-ID')}</td>
+                    <td>${r.tx.toLocaleString('id-ID')}</td>
+                </tr>
+            `).join('');
+            document.getElementById('pageInfo').innerText = `Halaman ${currentPage} dari ${Math.ceil(filteredTableData.length / rowsPerPage)}`;
+        }
+
+        // Start Everything
+        fetchData();
+    </script>
 </body>
 </html>
