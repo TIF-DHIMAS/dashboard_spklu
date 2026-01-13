@@ -2,71 +2,9 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Peta Sebaran & Evaluasi SPKLU Kalimantan Barat</title>
+    <title>Monitoring SPKLU Kalimantan Barat</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { margin:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; scroll-behavior: smooth; }
-        
-        /* Navbar */
-        .navbar {
-            position: fixed; top: 0; width: 100%; height: 50px;
-            background: #1e88e5; color: white; display: flex;
-            align-items: center; justify-content: space-between;
-            padding: 0 20px; z-index: 2000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .navbar b { font-size: 18px; }
-        .navbar .menu a {
-            color: white; text-decoration: none; font-weight: bold;
-            padding: 8px 15px; border-radius: 4px; transition: 0.3s;
-        }
-        .navbar .menu a:hover { background: rgba(255,255,255,0.2); }
-
-        /* Layer 1: Map */
-        #map-container { height: 100vh; position: relative; padding-top: 50px; box-sizing: border-box; }
-        #map { height: 100%; width: 100%; }
-
-        .panel {
-            position: absolute; top: 70px; left: 20px; z-index: 1000;
-            background: white; padding: 15px; border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.25); width: 300px;
-            max-height: 80vh; overflow-y: auto;
-        }
-        .panel h3 { margin: 0 0 10px 0; font-size: 16px; border-bottom: 2px solid #1e88e5; padding-bottom: 5px; }
-        .panel label { font-size: 12px; font-weight: bold; display: block; margin-top: 10px; }
-        .panel input, .panel select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .list { margin-top: 15px; border-top: 1px solid #ddd; }
-        .list-item { padding: 10px; font-size: 13px; border-bottom: 1px solid #eee; cursor: pointer; }
-        .list-item:hover { background: #f0f7ff; }
-        .list-item b { display: block; color: #1e88e5; }
-
-        /* Layer 2: Evaluation */
-        #evaluation-layer { min-height: 100vh; padding: 80px 40px; background: #fff; }
-        .container { max-width: 1100px; margin: auto; }
-        .filter-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px; background: #f9f9f9; padding: 20px; border-radius: 8px;
-            border: 1px solid #eee; margin-bottom: 30px;
-        }
-        .filter-item label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 8px; }
-        .filter-item select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
-
-        .chart-box { background: white; padding: 20px; border-radius: 8px; border: 1px solid #eee; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        
-        /* Table Style */
-        .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #eee; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        table th { background: #1e88e5; color: white; padding: 12px; text-align: left; }
-        table td { padding: 12px; border-bottom: 1px solid #eee; }
-        table tr:nth-child(even) { background: #fafafa; }
-
-        .pagination { display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 10px; }
-        .pagination button { padding: 8px 15px; border: none; background: #1e88e5; color: white; border-radius: 4px; cursor: pointer; }
-        .pagination button:disabled { background: #ccc; cursor: not-allowed; }
-
-        .legend { background:white; padding:10px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.3); font-size:12px; line-height: 1.5; }
-        .legend img { width:16px; height:16px; vertical-align:middle; margin-right:5px; }
-    </style>
 </head>
 <body>
 
@@ -104,7 +42,7 @@
 
     <div id="evaluation-layer">
         <div class="container">
-            <h2 style="text-align: center; color: #333;">Dashboard Evaluasi SPKLU</h2>
+            <h2 style="text-align: center;">Dashboard Evaluasi SPKLU</h2>
             
             <div class="filter-grid">
                 <div class="filter-item">
@@ -134,7 +72,7 @@
                     <select id="evalFilterTime">
                         <option value="12">1 Tahun Terakhir</option>
                         <option value="24">2 Tahun Terakhir</option>
-                        <option value="all">Semua Data (3 Tahun)</option>
+                        <option value="all">Semua Data</option>
                     </select>
                 </div>
             </div>
@@ -143,7 +81,7 @@
                 <canvas id="mainChart" height="100"></canvas>
             </div>
 
-            <h3 style="margin-top: 40px;">Detail Transaksi Bulanan</h3>
+            <h3>Detail Transaksi Bulanan</h3>
             <div class="table-container">
                 <table id="detailTable">
                     <thead>
@@ -151,7 +89,7 @@
                             <th>Nama SPKLU</th>
                             <th>UP3</th>
                             <th>Bulan</th>
-                            <th id="thCategory">kWh</th>
+                            <th>kWh</th>
                             <th>Transaksi</th>
                         </tr>
                     </thead>
@@ -167,242 +105,8 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // Data Embed dari Spreadsheet
-        const rawData = [
-            // Note: Data disingkat untuk efisiensi ruang, namun struktur tetap sama.
-            // Nama, Alamat, Lat, Lon, Kota, Type, KW, UP3, ULP, tx_data{}, kwh_data{}
-            // Data di bawah ini akan di-inject melalui logika aplikasi.
-        ];
-
-        // --- Variabel Global ---
-        let map, markers = [];
-        let spkluData = []; 
-        let currentChart = null;
-        let currentPage = 1;
-        const rowsPerPage = 10;
-        let filteredTableData = [];
-
-        // --- Inisialisasi Data (Placeholder dari Python Processing) ---
-        const appData = {spklu_data: [/* DATA_INJECTED_HERE */], up3_list: [], kota_list: [], date_list: []};
-        
-        // Manual Data Inject (Sesuai file yang diupload)
-        // [Catatan: Di sini saya akan memasukkan logika pemrosesan data real dari CSV Anda]
-    </script>
-
-    <script>
-        // Data dari file CSV yang diproses (Contoh struktur)
-        const db = {
-            spklu_data: [], // Akan diisi
-            up3_list: ["21PTK", "21SKW"], // Berdasarkan UP3 di file
-            kota_list: [],
-            date_list: []
-        };
-
-        // Fungsi Load Data (Simulasi pengambilan data dari file yang Anda unggah)
-        async function loadAppData() {
-            // Karena ini file HTML mandiri, data dari CSV Anda sudah dikonversi ke format JSON di bawah ini:
-            const dataResponse = await fetch('spklu_data.json'); // Asumsi file json dibuat oleh script
-            // Catatan: Karena saya tidak bisa memberikan file eksternal .json yang hidup, 
-            // saya akan menanamkan data kunci di sini.
-        }
-
-        // --- LOGIKA UTAMA ---
-        function initApp(data) {
-            db.spklu_data = data.spklu_data;
-            db.up3_list = data.up3_list;
-            db.kota_list = data.kota_list;
-            db.date_list = data.date_list;
-
-            initMap();
-            populateFilters();
-            updateDashboard();
-
-            // Event Listeners Map
-            document.getElementById('searchNama').addEventListener('input', applyMapFilter);
-            document.getElementById('mapFilterKota').addEventListener('change', applyMapFilter);
-            document.getElementById('mapFilterType').addEventListener('change', applyMapFilter);
-
-            // Event Listeners Evaluasi
-            document.getElementById('evalFilterGeo').addEventListener('change', updateDashboard);
-            document.getElementById('evalFilterCategory').addEventListener('change', updateDashboard);
-            document.getElementById('evalFilterChartType').addEventListener('change', updateDashboard);
-            document.getElementById('evalFilterTime').addEventListener('change', updateDashboard);
-            
-            document.getElementById('prevBtn').onclick = () => { if(currentPage > 1) { currentPage--; renderTable(); } };
-            document.getElementById('nextBtn').onclick = () => { if(currentPage * rowsPerPage < filteredTableData.length) { currentPage++; renderTable(); } };
-        }
-
-        function initMap() {
-            map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 8);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-            const icons = {
-                "FAST CHARGING": L.icon({ iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', iconSize:[25,41], iconAnchor:[12,41] }),
-                "MEDIUM CHARGING": L.icon({ iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', iconSize:[25,41], iconAnchor:[12,41] }),
-                "ULTRA FAST CHARGING": L.icon({ iconUrl:'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', iconSize:[25,41], iconAnchor:[12,41] })
-            };
-
-            db.spklu_data.forEach(d => {
-                const m = L.marker([d.lat, d.lon], { icon: icons[d.type] || icons["FAST CHARGING"] })
-                    .bindPopup(`<b>${d.nama}</b><br>${d.alamat}<br>Type: ${d.type} (${d.kw} kW)`)
-                    .addTo(map);
-                m.data = d;
-                markers.push(m);
-            });
-            applyMapFilter();
-        }
-
-        function populateFilters() {
-            const mapFilterKota = document.getElementById('mapFilterKota');
-            const optUP3 = document.getElementById('optUP3');
-            const optKota = document.getElementById('optKota');
-
-            db.kota_list.sort().forEach(k => {
-                const opt = new Option(k, k);
-                mapFilterKota.add(opt.cloneNode(true));
-                optKota.appendChild(opt);
-            });
-
-            db.up3_list.sort().forEach(u => {
-                const opt = new Option("UP3 " + u, u);
-                optUP3.appendChild(opt);
-            });
-        }
-
-        function applyMapFilter() {
-            const search = document.getElementById('searchNama').value.toLowerCase();
-            const kota = document.getElementById('mapFilterKota').value;
-            const type = document.getElementById('mapFilterType').value;
-            const listEl = document.getElementById('spkluList');
-            listEl.innerHTML = '';
-
-            markers.forEach(m => {
-                const d = m.data;
-                const match = d.nama.toLowerCase().includes(search) &&
-                            (kota === 'all' || d.kota === kota) &&
-                            (type === 'all' || d.type === type);
-                
-                if(match) {
-                    m.addTo(map);
-                    const item = document.createElement('div');
-                    item.className = 'list-item';
-                    item.innerHTML = `<b>${d.nama}</b> ${d.kota} - ${d.kw}kW`;
-                    item.onclick = () => { map.setView([d.lat, d.lon], 14); m.openPopup(); };
-                    listEl.appendChild(item);
-                } else {
-                    map.removeLayer(m);
-                }
-            });
-        }
-
-        function updateDashboard() {
-            const geo = document.getElementById('evalFilterGeo').value;
-            const category = document.getElementById('evalFilterCategory').value; // 'kwh' or 'transactions'
-            const chartType = document.getElementById('evalFilterChartType').value;
-            const timeRange = document.getElementById('evalFilterTime').value;
-
-            // 1. Filter Data Waktu
-            let displayDates = [...db.date_list];
-            if(timeRange !== 'all') {
-                displayDates = displayDates.slice(-parseInt(timeRange));
-            }
-
-            // 2. Aggregasi Data Grafik
-            const chartLabels = displayDates;
-            const chartValues = new Array(chartLabels.length).fill(0);
-
-            const filteredStations = db.spklu_data.filter(s => 
-                geo === 'all' || s.up3 === geo || s.kota === geo
-            );
-
-            filteredStations.forEach(s => {
-                const dataObj = s[category];
-                chartLabels.forEach((date, idx) => {
-                    chartValues[idx] += dataObj[date] || 0;
-                });
-            });
-
-            renderChart(chartType, chartLabels, chartValues, category === 'kwh' ? 'Total kWh' : 'Total Transaksi');
-
-            // 3. Siapkan Data Tabel
-            filteredTableData = [];
-            filteredStations.forEach(s => {
-                displayDates.forEach(date => {
-                    filteredTableData.push({
-                        nama: s.nama,
-                        up3: s.up3,
-                        bulan: date,
-                        kwh: s.kwh[date] || 0,
-                        tx: s.transactions[date] || 0
-                    });
-                });
-            });
-            
-            // Sort table by month (descending)
-            filteredTableData.sort((a,b) => b.bulan.localeCompare(a.bulan));
-            
-            currentPage = 1;
-            renderTable();
-        }
-
-        function renderChart(type, labels, values, labelName) {
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            if(currentChart) currentChart.destroy();
-            
-            currentChart = new Chart(ctx, {
-                type: type,
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: labelName,
-                        data: values,
-                        backgroundColor: 'rgba(30, 136, 229, 0.2)',
-                        borderColor: '#1e88e5',
-                        borderWidth: 2,
-                        fill: type === 'line',
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'top' } },
-                    scales: { y: { beginAtZero: true } }
-                }
-            });
-        }
-
-        function renderTable() {
-            const body = document.getElementById('tableBody');
-            body.innerHTML = '';
-            
-            const start = (currentPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            const pageData = filteredTableData.slice(start, end);
-
-            pageData.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${row.nama}</td>
-                    <td>${row.up3}</td>
-                    <td>${row.bulan}</td>
-                    <td>${row.kwh.toLocaleString()}</td>
-                    <td>${row.tx.toLocaleString()}</td>
-                `;
-                body.appendChild(tr);
-            });
-
-            document.getElementById('pageInfo').innerText = `Halaman ${currentPage} dari ${Math.ceil(filteredTableData.length / rowsPerPage)}`;
-            document.getElementById('prevBtn').disabled = (currentPage === 1);
-            document.getElementById('nextBtn').disabled = (currentPage * rowsPerPage >= filteredTableData.length);
-        }
-
-        // --- DATA INJECTION ---
-        // (Isi data ini otomatis dari hasil pemrosesan file spklu-homecharging.xlsx)
-        const finalData = ${spklu_json_str}; // Script Python akan mengisi variabel ini
-        initApp(finalData);
-
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
