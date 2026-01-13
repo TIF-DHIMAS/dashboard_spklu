@@ -138,19 +138,82 @@
         }
 
         function initApp() {
-            map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 7);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            db.spklu_data.forEach(d => {
-                const m = L.marker([d.lat, d.lon]).addTo(map).bindPopup(`<b>${d.nama}</b><br><a href="https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}" target="_blank">Petunjuk Rute</a>`);
-                m.data = d; markers.push(m);
-            });
+    // 1. Inisialisasi Peta
+    if (map) map.remove();
+    map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-            const mUP3 = document.getElementById('mapFilterUP3'), mKota = document.getElementById('mapFilterKota'), oUP3 = document.getElementById('optUP3'), oKota = document.getElementById('optKota');
-            db.up3_list.forEach(u => { mUP3.add(new Option(u, u)); oUP3.appendChild(new Option("UP3 "+u, u)); });
-            db.kota_list.forEach(k => { mKota.add(new Option(k, k)); oKota.appendChild(new Option(k, k)); });
+    // 2. Definisi Custom Icon berdasarkan tipe
+    const icons = {
+        "FAST CHARGING": L.icon({
+            iconUrl: 'icon/fast.png',
+            iconSize: [32, 32], // Ukuran icon (lebar, tinggi)
+            iconAnchor: [16, 32], // Titik tumpu icon (tengah bawah)
+            popupAnchor: [0, -32] // Posisi popup relatif terhadap icon
+        }),
+        "MEDIUM CHARGING": L.icon({
+            iconUrl: 'icon/mediumfast.png',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -32]
+        }),
+        "ULTRA FAST CHARGING": L.icon({
+            iconUrl: 'icon/ultrafast.png',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -32]
+        })
+    };
 
-            setupEvents(); updateDashboard(); applyMapFilter();
+    // 3. Tambah Marker dengan Icon Custom
+    db.spklu_data.forEach(d => {
+        if (!isNaN(d.lat) && !isNaN(d.lon)) {
+            const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}`;
+            
+            // Pilih icon berdasarkan tipe, jika tidak cocok gunakan fast.png sebagai default
+            const selectedIcon = icons[d.type] || icons["FAST CHARGING"];
+
+            const m = L.marker([d.lat, d.lon], { icon: selectedIcon }).addTo(map).bindPopup(`
+                <div style="min-width:160px; font-family: sans-serif;">
+                    <b style="color:#1e88e5; font-size:14px;">${d.nama}</b><br>
+                    <small style="color:#666;">${d.alamat}</small><br>
+                    <small><b>Tipe:</b> ${d.type}</small><br><br>
+                    <a href="${gmapsUrl}" target="_blank" 
+                       style="background:#1e88e5; color:white; padding:6px 12px; text-decoration:none; border-radius:4px; font-size:11px; display:inline-block; font-weight:bold;">
+                       📍 Petunjuk Rute (Maps)
+                    </a>
+                </div>
+            `);
+            m.data = d;
+            markers.push(m);
         }
+    });
+
+    // 4. Populasi Filter (UP3 & Kota)
+    const mapUP3 = document.getElementById('mapFilterUP3');
+    const mapKota = document.getElementById('mapFilterKota');
+    const optUP3Group = document.getElementById('optUP3');
+    const optKotaGroup = document.getElementById('optKota');
+
+    if(mapUP3) mapUP3.innerHTML = '<option value="all">Semua UP3</option>';
+    if(mapKota) mapKota.innerHTML = '<option value="all">Semua Kota</option>';
+    if(optUP3Group) optUP3Group.innerHTML = '';
+    if(optKotaGroup) optKotaGroup.innerHTML = '';
+
+    db.up3_list.forEach(u => {
+        if(mapUP3) mapUP3.add(new Option(u, u));
+        if(optUP3Group) optUP3Group.appendChild(new Option("UP3 " + u, u));
+    });
+
+    db.kota_list.forEach(k => {
+        if(mapKota) mapKota.add(new Option(k, k));
+        if(optKotaGroup) optKotaGroup.appendChild(new Option(k, k));
+    });
+
+    setupEventListeners();
+    updateDashboard();
+    applyMapFilter();
+}
 
         function setupEvents() {
             ['searchNama', 'mapFilterUP3', 'mapFilterKota', 'mapFilterType'].forEach(id => document.getElementById(id).addEventListener('input', applyMapFilter));
