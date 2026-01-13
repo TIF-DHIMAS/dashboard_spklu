@@ -270,44 +270,62 @@
 
         // --- INITIALIZATION ---
         function initApp() {
-            map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 7);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    // --- Inisialisasi Peta ---
+    if (map) map.remove();
+    map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-            db.spklu_data.forEach(d => {
-                if (!isNaN(d.lat)) {
-                    // Google Maps Directions Link
-                    const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}`;
-                    const m = L.marker([d.lat, d.lon]).addTo(map).bindPopup(`
-                        <div style="min-width:150px;">
-                            <b style="color:#1e88e5;">${d.nama}</b><br>
-                            <span style="font-size:11px;">${d.alamat}</span><br>
-                            <a href="${gmapsUrl}" target="_blank" class="btn-rute">📍 Petunjuk Rute</a>
-                        </div>
-                    `);
-                    m.data = d;
-                    markers.push(m);
-                }
-            });
-
-            // Fill Dropdowns
-            const mapUP3 = document.getElementById('mapFilterUP3');
-            const mapKota = document.getElementById('mapFilterKota');
-            const optUP3 = document.getElementById('optUP3');
-            const optKota = document.getElementById('optKota');
-
-            db.up3_list.forEach(u => {
-                mapUP3.add(new Option(u, u));
-                optUP3.add(new Option("UP3 " + u, u));
-            });
-            db.kota_list.forEach(k => {
-                mapKota.add(new Option(k, k));
-                optKota.add(new Option(k, k));
-            });
-
-            setupEventListeners();
-            updateDashboard();
-            applyMapFilter();
+    db.spklu_data.forEach(d => {
+        if (!isNaN(d.lat)) {
+            const gmapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}`;
+            const m = L.marker([d.lat, d.lon]).addTo(map).bindPopup(`
+                <div style="min-width:150px; font-family:sans-serif;">
+                    <b style="color:#1e88e5; font-size:14px;">${d.nama}</b><br>
+                    <small>${d.alamat}</small><br><br>
+                    <a href="${gmapsUrl}" target="_blank" class="btn-rute" 
+                       style="background:#1e88e5; color:white; padding:5px 10px; text-decoration:none; border-radius:4px; font-size:11px; display:inline-block;">
+                       📍 Petunjuk Rute
+                    </a>
+                </div>
+            `);
+            m.data = d;
+            markers.push(m);
         }
+    });
+
+    // --- POPULASI FILTER (BAGIAN YANG DIPERBAIKI) ---
+    const mapUP3 = document.getElementById('mapFilterUP3');
+    const mapKota = document.getElementById('mapFilterKota');
+    const optUP3Group = document.getElementById('optUP3'); // Ini adalah <optgroup>
+    const optKotaGroup = document.getElementById('optKota'); // Ini adalah <optgroup>
+
+    // Bersihkan isi sebelumnya
+    mapUP3.innerHTML = '<option value="all">Semua UP3</option>';
+    mapKota.innerHTML = '<option value="all">Semua Kota</option>';
+    optUP3Group.innerHTML = '';
+    optKotaGroup.innerHTML = '';
+
+    // Isi Filter UP3
+    db.up3_list.forEach(u => {
+        // Untuk <select> biasa di peta, gunakan .add()
+        mapUP3.add(new Option(u, u));
+        // Untuk <optgroup> di evaluasi, gunakan .appendChild()
+        optUP3Group.appendChild(new Option("UP3 " + u, u));
+    });
+
+    // Isi Filter Kota
+    db.date_list; // trigger data
+    db.kota_list.forEach(k => {
+        // Untuk <select> biasa di peta, gunakan .add()
+        mapKota.add(new Option(k, k));
+        // Untuk <optgroup> di evaluasi, gunakan .appendChild()
+        optKotaGroup.appendChild(new Option(k, k));
+    });
+
+    setupEventListeners();
+    updateDashboard();
+    applyMapFilter();
+}
 
         function setupEventListeners() {
             document.getElementById('searchNama').addEventListener('input', applyMapFilter);
