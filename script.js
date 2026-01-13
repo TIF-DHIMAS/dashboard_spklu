@@ -110,19 +110,40 @@ function updateDashboard() {
     const chartType = document.getElementById('evalFilterChartType').value;
     const timeRange = document.getElementById('evalFilterTime').value;
 
+    // 1. Filter Waktu
     let displayDates = (timeRange === 'all') ? db.date_list : db.date_list.slice(-parseInt(timeRange));
+    
+    // 2. Filter Stasiun berdasarkan Wilayah (UP3 atau Kota)
     const filteredStations = db.spklu_data.filter(s => geo === 'all' || s.UP3 === geo || s.Kota === geo);
 
-    const values = displayDates.map(date => {
+    // 3. Hitung Data per Bulan untuk Grafik
+    const valuesPerMonth = displayDates.map(date => {
         return filteredStations.reduce((sum, s) => sum + (s[category][date] || 0), 0);
     });
 
-    renderChart(chartType, displayDates, values, category.toUpperCase());
+    // 4. HITUNG ANGKA KOMULATIF (Total Keseluruhan)
+    const grandTotal = valuesPerMonth.reduce((a, b) => a + b, 0);
 
+    // 5. Update Tampilan Angka di Atas Grafik
+    const unit = (category === 'kwh') ? ' kWh' : ' Transaksi';
+    document.getElementById('labelKomulatif').innerText = `Total Komulatif (${category.toUpperCase()})`;
+    document.getElementById('totalValue').innerText = grandTotal.toLocaleString('id-ID') + unit;
+    document.getElementById('totalSPKLU').innerText = filteredStations.length + " Lokasi";
+
+    // 6. Render Grafik
+    renderChart(chartType, displayDates, valuesPerMonth, category.toUpperCase());
+
+    // 7. Update Tabel (seperti sebelumnya)
     filteredTableData = [];
     filteredStations.forEach(s => {
         displayDates.forEach(date => {
-            filteredTableData.push({ nama: s.nama, up3: s.UP3, bulan: date, kwh: s.kwh[date] || 0, tx: s.transactions[date] || 0 });
+            filteredTableData.push({ 
+                nama: s.nama, 
+                up3: s.UP3, 
+                bulan: date, 
+                kwh: s.kwh[date] || 0, 
+                tx: s.transactions[date] || 0 
+            });
         });
     });
     filteredTableData.sort((a,b) => b.bulan.localeCompare(a.bulan));
