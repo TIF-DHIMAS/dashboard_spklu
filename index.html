@@ -302,29 +302,69 @@
 
         // --- DASHBOARD LOGIC ---
         function updateDashboard() {
-            const geo = document.getElementById('evalFilterGeo').value, cat = document.getElementById('evalFilterCategory').value, type = document.getElementById('evalFilterChartType').value, time = document.getElementById('evalFilterTime').value;
-            
-            let dates = (time === 'all') ? db.date_list : db.date_list.slice(-parseInt(time));
-            const stations = db.spklu_data.filter(s => geo === 'all' || s.UP3 === geo || s.Kota === geo);
-            const dataSheet = (cat === 'kwh') ? 'kwh' : 'tx';
+    const geo = document.getElementById('evalFilterGeo').value;
+    const category = document.getElementById('evalFilterCategory').value;
+    const chartType = document.getElementById('evalFilterChartType').value;
+    const timeRange = document.getElementById('evalFilterTime').value;
 
-            const vals = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s[dataSheet][d]?.toString().replace(',','.')) || 0), 0));
+    // 1. SMART FILTER: Cari indeks terakhir yang benar-benar berisi data > 0
+    let lastDataIndex = -1;
+    for (let i = db.date_list.length - 1; i >= 0; i--) {
+        const monthHeader = db.date_list[i];
+        const totalValue = db.spklu_data.reduce((sum, s) => {
+            const val = s[category === 'kwh' ? 'kwh' : 'tx'][monthHeader];
+            return sum + (parseFloat(val?.toString().replace(',', '.')) || 0);
+        }, 0);
 
-            document.getElementById('totalValue').innerText = vals.reduce((a,b)=>a+b, 0).toLocaleString('id-ID') + (cat==='kwh'?' kWh':' Tx');
-            document.getElementById('totalSPKLU').innerText = stations.length + " Unit";
-
-            if(currentChart) currentChart.destroy();
-            currentChart = new Chart(document.getElementById('mainChart').getContext('2d'), {
-                type: type,
-                data: { labels: dates, datasets: [{ label: cat.toUpperCase(), data: vals, borderColor: '#1e88e5', backgroundColor: 'rgba(30,136,229,0.1)', fill: true, tension: 0.3 }] },
-                options: { responsive:true, maintainAspectRatio:false }
-            });
-
-            filteredTableData = [];
-            stations.forEach(s => dates.forEach(d => filteredTableData.push({ n: s.nama, u: s.UP3, ul: s.ULP, b: d, k: s.kwh[d]||0, t: s.tx[d]||0 })));
-            filteredTableData.sort((a,b) => b.b.localeCompare(a.b));
-            currentPage = 1; renderTable();
+        if (totalValue > 0) {
+            lastDataIndex = i;
+            break; // Menemukan bulan terbaru yang ada datanya
         }
+    }
+
+    // Jika tidak ada data sama sekali, gunakan semua kolom
+    if (lastDataIndex === -1) lastDataIndex = db.date_list.length - 1;
+
+    // 2. Potong daftar tanggal sampai bulan terbaru yang berisi
+    let availableDates = db.date_list.slice(0, lastDataIndex + 1);
+    
+    // 3. Tentukan tampilan berdasarkan pilihan periode (12, 24, atau Semua)
+    let displayDates = (timeRange === 'all') 
+        ? availableDates 
+        : availableDates.slice(-parseInt(timeRange));
+
+    // 4. Filter data SPKLU berdasarkan Wilayah
+    const filteredStations = db.spklu_data.filter(s => geo === 'all' || s.UP3 === geo || s.Kota === geo);
+    const dataKey = (category === 'kwh') ? 'kwh' : 'tx';
+
+    // 5. Hitung total per bulan untuk grafik
+    const valuesPerMonth = displayDates.map(date => {
+        return filteredStations.reduce((sum, s) => {
+            const val = s[dataKey][date];
+            return sum + (parseFloat(val?.toString().replace(',', '.')) || 0);
+        }, 0);
+    });
+
+    // Update Ringkasan Angka
+    const grandTotal = valuesPerMonth.reduce((a, b) => a + b, 0);
+    document.getElementById('totalValue').innerText = grandTotal.toLocaleString('id-ID') + (category === 'kwh' ? ' kWh' : ' Tx');
+    document.getElementById('totalSPKLU').innerText = filteredStations.length + " Unit";
+
+    renderChart(chartType, displayDates, valuesPerMonth, category.toUpperCase());
+
+    // Update Tabel Detail
+    filteredTableData = [];
+    filteredStations.forEach(s => {
+        displayDates.forEach(date => {
+            filteredTableData.push({
+                n: s.nama, u: s.UP3, ul: s.ULP, b: date,
+                k: s.kwh[date] || 0, t: s.tx[date] || 0
+            });
+        });
+    });
+    filteredTableData.sort((a,b) => b.b.localeCompare(a.b));
+    currentPage = 1; renderTable();
+}
 
         function renderTable() {
             const start = (currentPage - 1) * rowsPerPage;
