@@ -1,341 +1,55 @@
-/* Dasar & Tipografi */
-body { 
-    margin: 0; 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    background: #f4f7f6; 
-    overflow-x: hidden; 
-}
+body { margin:0; font-family: 'Segoe UI', sans-serif; background: #f4f7f6; overflow-x: hidden; scroll-behavior: smooth; }
 
-/* Navigasi Utama (Dipercantik) */
-.navbar { 
-    position: fixed; 
-    top: 0; 
-    width: 100%; 
-    height: 50px; 
-    background: #1e88e5; 
-    color: white; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    padding: 0 20px; 
-    z-index: 2000; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-    box-sizing: border-box; 
-}
+/* Navbar */
+.navbar { position: fixed; top: 0; width: 100%; height: 50px; background: #1e88e5; color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 2000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); box-sizing: border-box; }
+.navbar .menu { display: flex; gap: 10px; }
+.navbar .menu a { color: white; text-decoration: none; font-weight: 600; padding: 6px 15px; border-radius: 20px; background: rgba(255, 255, 255, 0.1); transition: 0.3s; font-size: 13px; }
+.navbar .menu a:hover { background: white; color: #1e88e5; }
 
-.navbar b { 
-    font-size: 18px; 
-}
+/* Map & Panel */
+#map-container { height: 100vh; position: relative; padding-top: 50px; box-sizing: border-box; }
+#map { height: 100%; width: 100%; z-index: 1; }
+.panel { position: absolute; top: 70px; left: 20px; z-index: 1000; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.25); width: 280px; max-height: 85vh; overflow-y: auto; }
+.panel h3 { margin: 0 0 10px 0; font-size: 16px; border-bottom: 2px solid #1e88e5; padding-bottom: 5px; }
+.panel label { font-size: 11px; font-weight: bold; display: block; margin-top: 8px; color: #555; }
+.panel input, .panel select { width: 100%; padding: 8px; margin-top: 3px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 13px; }
 
-.navbar .menu {
-    display: flex;
-    gap: 10px;
-}
+/* List */
+.list { margin-top: 15px; border-top: 1px solid #ddd; }
+.list-item { padding: 10px; font-size: 12px; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; }
+.list-item:hover { background: #e3f2fd; border-left: 4px solid #1e88e5; }
+.list-item b { display: block; color: #1e88e5; }
 
-.navbar .menu a { 
-    color: white; 
-    text-decoration: none; 
-    font-weight: 600; 
-    padding: 8px 16px; 
-    border-radius: 20px; 
-    background: rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease; 
-    font-size: 13px; 
-    border: 1px solid transparent;
-}
+/* Legend */
+.legend { background: rgba(255,255,255,0.9); padding: 12px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.2); font-size: 11px; line-height: 20px; }
+.legend img { width: 16px; vertical-align: middle; margin-right: 8px; }
 
-.navbar .menu a:hover { 
-    background: white; 
-    color: #1e88e5; 
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
+/* Dashboard Cards */
+#evaluation-layer { padding: 40px 20px; background: #fff; }
+.container { max-width: 1150px; margin: auto; }
+.summary-grid { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+.sum-card { background: #fff; padding: 20px; border-radius: 8px; flex: 1; min-width: 250px; border-left: 5px solid #1e88e5; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+.sum-card span { font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; }
+.sum-card h2 { margin: 10px 0 0 0; color: #1e88e5; font-size: 24px; }
+#cardRupiah { border-left-color: #ff9800; }
+#cardRupiah h2 { color: #ff9800; }
+#cardUnit { border-left-color: #43a047; }
+#cardUnit h2 { color: #43a047; }
 
-/* Container Peta & Panel Filter */
-#map-container { 
-    height: 100vh; 
-    position: relative; 
-    padding-top: 50px; 
-    box-sizing: border-box; 
-}
+/* Filter Grid */
+.filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; background: #f9f9f9; padding: 20px; border-radius: 12px; border: 1px solid #eee; margin-bottom: 30px; }
+.filter-item label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 6px; }
+.filter-item select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; background: white; }
 
-#map { 
-    height: 100%; 
-    width: 100%; 
-    z-index: 1; 
-}
+.chart-box { height: 450px; background: white; padding: 15px; border: 1px solid #eee; border-radius: 8px; }
 
-.panel { 
-    position: absolute; 
-    top: 70px; 
-    left: 20px; 
-    z-index: 1000; 
-    background: white; 
-    padding: 15px; 
-    border-radius: 10px; 
-    box-shadow: 0 4px 15px rgba(0,0,0,0.25); 
-    width: 280px; 
-    max-height: 80vh; 
-    overflow-y: auto; 
-}
+/* Table */
+.table-container { overflow-x: auto; margin-top: 20px; border-radius: 8px; border: 1px solid #eee; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table th { background: #1e88e5; color: white; padding: 12px; text-align: left; }
+table td { padding: 10px; border-bottom: 1px solid #eee; }
 
-.panel h3 { 
-    margin: 0 0 10px 0; 
-    font-size: 16px; 
-    border-bottom: 2px solid #1e88e5; 
-    padding-bottom: 5px; 
-}
+.pagination { display: flex; justify-content: center; align-items: center; margin-top: 20px; gap: 10px; }
+.pagination button { padding: 8px 15px; border: 1px solid #1e88e5; background: white; color: #1e88e5; border-radius: 4px; cursor: pointer; }
 
-.panel label { 
-    font-size: 11px; 
-    font-weight: bold; 
-    display: block; 
-    margin-top: 8px; 
-    color: #555; 
-}
-
-.panel input, .panel select { 
-    width: 100%; 
-    padding: 8px; 
-    margin-top: 3px; 
-    border: 1px solid #ccc; 
-    border-radius: 4px; 
-    box-sizing: border-box; 
-    font-size: 13px; 
-}
-
-/* Daftar Hasil Pencarian di Panel */
-.list { 
-    margin-top: 15px; 
-    border-top: 1px solid #ddd; 
-}
-
-.list-item { 
-    padding: 10px; 
-    font-size: 12px; 
-    border-bottom: 1px solid #eee; 
-    cursor: pointer; 
-    transition: 0.2s; 
-}
-
-.list-item:hover { 
-    background: #e3f2fd; 
-    border-left: 4px solid #1e88e5; 
-}
-
-.list-item b { 
-    display: block; 
-    color: #1e88e5; 
-    font-size: 13px; 
-}
-
-/* Gaya Legenda Peta */
-.legend { 
-    background: white; 
-    padding: 12px; 
-    line-height: 22px; 
-    color: #333; 
-    border-radius: 8px; 
-    box-shadow: 0 0 15px rgba(0,0,0,0.2); 
-    font-size: 12px; 
-    min-width: 140px; 
-}
-
-.legend b { 
-    display: block; 
-    margin-bottom: 8px; 
-    border-bottom: 1px solid #eee; 
-    padding-bottom: 4px; 
-}
-
-.legend img { 
-    width: 18px; 
-    vertical-align: middle; 
-    margin-right: 8px; 
-}
-
-.legend-count { 
-    float: right; 
-    font-weight: bold; 
-    color: #1e88e5; 
-    margin-left: 10px; 
-}
-
-/* Layer Evaluasi & Dashboard */
-#evaluation-layer { 
-    min-height: 100vh; 
-    padding: 60px 20px; 
-    background: #fff; 
-}
-
-.container { 
-    max-width: 1100px; 
-    margin: auto; 
-}
-
-.summary-grid { 
-    display: flex; 
-    gap: 15px; 
-    margin-bottom: 20px; 
-    flex-wrap: wrap; 
-}
-
-.sum-card { 
-    background: #fff; 
-    padding: 20px; 
-    border-radius: 8px; 
-    flex: 1; 
-    min-width: 220px; 
-    border-left: 5px solid #1e88e5; 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-}
-
-.sum-card span { 
-    font-size: 12px; 
-    color: #666; 
-    font-weight: bold; 
-    text-transform: uppercase; 
-}
-
-.sum-card h2 { 
-    margin: 8px 0 0 0; 
-    color: #1e88e5; 
-    font-size: 26px; 
-}
-
-.filter-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-    gap: 15px; 
-    background: #f9f9f9; 
-    padding: 20px; 
-    border-radius: 12px; 
-    border: 1px solid #eee; 
-    margin-bottom: 25px; 
-}
-
-.filter-item label { 
-    display: block; 
-    font-size: 12px; 
-    font-weight: bold; 
-    margin-bottom: 6px; 
-    color: #444; 
-}
-
-.filter-item select { 
-    width: 100%; 
-    padding: 10px; 
-    border-radius: 6px; 
-    border: 1px solid #ccc; 
-    background: white; 
-    outline: none; 
-}
-
-.chart-box { 
-    background: white; 
-    padding: 20px; 
-    border-radius: 12px; 
-    border: 1px solid #eee; 
-    height: 450px; 
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03); 
-}
-
-/* Filter Tahun Tabel */
-.table-filter-container { 
-    margin: 20px 0 15px 0; 
-    display: flex; 
-    align-items: center; 
-    gap: 10px; 
-}
-
-.table-filter-container label { 
-    font-size: 13px; 
-    font-weight: bold; 
-    color: #444; 
-}
-
-.table-filter-container select { 
-    padding: 8px; 
-    border-radius: 5px; 
-    border: 1px solid #ccc; 
-    background: white; 
-    font-size: 13px; 
-}
-
-/* Tabel Data & Kontainer */
-.table-container { 
-    overflow-x: auto; 
-    border-radius: 8px; 
-    border: 1px solid #eee; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-}
-
-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    font-size: 13px; 
-    background: white; 
-}
-
-table th { 
-    background: #1e88e5; 
-    color: white; 
-    padding: 15px; 
-    text-align: left; 
-}
-
-table td { 
-    padding: 12px; 
-    border-bottom: 1px solid #eee; 
-}
-
-/* Navigasi Halaman (Pagination) */
-.pagination { 
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    margin-top: 25px; 
-    gap: 15px; 
-}
-
-.pagination button { 
-    padding: 8px 16px; 
-    border: 1px solid #1e88e5; 
-    background: white; 
-    color: #1e88e5; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: bold; 
-    transition: 0.3s; 
-}
-
-.pagination button:hover:not(:disabled) { 
-    background: #1e88e5; 
-    color: white; 
-}
-
-.pagination button:disabled { 
-    border-color: #ccc; 
-    color: #ccc; 
-    cursor: not-allowed; 
-}
-
-/* Popup & Tombol Aksi */
-.btn-rute { 
-    display: block; 
-    margin-top: 10px; 
-    padding: 10px; 
-    background: #1e88e5; 
-    color: white !important; 
-    text-decoration: none; 
-    border-radius: 6px; 
-    font-size: 12px; 
-    font-weight: bold; 
-    text-align: center; 
-    transition: 0.3s;
-}
-
-.btn-rute:hover {
-    background: #1565c0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
+.btn-rute { display: block; margin-top: 10px; padding: 8px; background: #1e88e5; color: white !important; text-decoration: none; border-radius: 4px; text-align: center; font-weight: bold; font-size: 11px; }
