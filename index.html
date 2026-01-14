@@ -374,9 +374,12 @@
             document.getElementById('prevBtn').disabled = (currentPage === 1);
             document.getElementById('nextBtn').disabled = (currentPage * rowsPerPage >= filteredTableData.length);
         }
-        function renderChart(type, labels, data, label) {
+       function renderChart(type, labels, data, label) {
     const ctx = document.getElementById('mainChart').getContext('2d');
     if (currentChart) currentChart.destroy();
+
+    // Tentukan pengaturan khusus berdasarkan jenis grafik (Line vs Bar)
+    const isLine = (type === 'line');
 
     currentChart = new Chart(ctx, {
         type: type,
@@ -385,14 +388,17 @@
             datasets: [{
                 label: label,
                 data: data,
-                // --- BAGIAN MERUBAH WARNA ---
-                backgroundColor: '#00A2E9', // Warna Biru PLN (Isi Batang)
-                borderColor: '#0079C1',     // Warna Biru Gelap (Garis Pinggir)
-                // ----------------------------
-                borderWidth: 2,
-                borderRadius: 5,            // Membuat sudut batang agak bulat (modern)
-                fill: true,
-                tension: 0.3
+                // Warna Biru PLN Utama
+                backgroundColor: isLine ? 'transparent' : '#00A2E9', 
+                borderColor: '#0079C1',
+                borderWidth: isLine ? 3 : 2, // Garis sedikit lebih tebal jika mode Line
+                
+                // PENGATURAN KRUSIAL:
+                fill: false,        // Menghilangkan warna biru tebal di bawah garis
+                pointRadius: isLine ? 4 : 0, // Menampilkan titik hanya pada mode Line
+                tension: 0.3,       // Membuat garis sedikit melengkung (smooth)
+                
+                borderRadius: type === 'bar' ? 5 : 0 // Membulatkan batang jika mode Bar
             }]
         },
         options: {
@@ -402,7 +408,10 @@
                 legend: { position: 'bottom' }
             },
             scales: {
-                y: { beginAtZero: true }
+                y: { 
+                    beginAtZero: true,
+                    grid: { color: '#f0f0f0' }
+                }
             }
         }
     });
