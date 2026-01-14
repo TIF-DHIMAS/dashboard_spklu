@@ -40,31 +40,103 @@ function processData(spklu, tx, kwh) {
     db.up3_list = [...uSet].sort(); db.kota_list = [...kSet].sort();
 }
 
+// --- INITIALIZE APP DENGAN POPUP LENGKAP ---
 function initApp() {
     if (map) map.remove();
     map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+        attribution: '© OpenStreetMap' 
+    }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     const icons = {
-        "FAST CHARGING": L.icon({ iconUrl: 'icon/fast.png', iconSize: [32, 32], iconAnchor: [16, 32] }),
-        "MEDIUM CHARGING": L.icon({ iconUrl: 'icon/mediumfast.png', iconSize: [32, 32], iconAnchor: [16, 32] }),
-        "ULTRA FAST CHARGING": L.icon({ iconUrl: 'icon/ultrafast.png', iconSize: [32, 32], iconAnchor: [16, 32] })
+        "FAST CHARGING": L.icon({ iconUrl: 'icon/fast.png', iconSize: [30, 30], iconAnchor: [15, 30] }),
+        "MEDIUM CHARGING": L.icon({ iconUrl: 'icon/mediumfast.png', iconSize: [30, 30], iconAnchor: [15, 30] }),
+        "ULTRA FAST CHARGING": L.icon({ iconUrl: 'icon/ultrafast.png', iconSize: [30, 30], iconAnchor: [15, 30] })
     };
 
     db.spklu_data.forEach(d => {
         if (!isNaN(d.lat)) {
-            const m = L.marker([d.lat, d.lon], { icon: icons[d['TYPE CHARGE']] || icons["FAST CHARGING"] }).addTo(map)
-                .bindPopup(`<b>${d.nama}</b><br><small>ID: ${d.ID_SPKLU}</small><br><a href="http://google.com/maps?q=${d.lat},${d.lon}" target="_blank" class="btn-rute">📍 Navigasi</a>`);
-            m.data = d; markers.push(m);
+            // Hitung Komulatif Per Unit (Semua Data yang Ada di Sheet)
+            const totalKwh = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.kwh[bln]?.toString().replace(',','.')) || 0), 0);
+            const totalTx = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.tx[bln]?.toString().replace(',','.')) || 0), 0);
+            
+            const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}`;
+
+            const popupContent = `
+                <div style="min-width:200px">
+                    <b style="color:#1e88e5; font-size:14px; display:block; margin-bottom:5px;">${d.nama}</b>
+                    <table style="width:100%; font-size:11px; border-collapse:collapse;">
+                        <tr><td><b>ID</b></td><td>: ${d.ID_SPKLU}</td></tr>
+                        <tr><td><b>Daya</b></td><td>: ${d.KW || '-'} kW</td></tr>
+                        <tr><td><b>Alamat</b></td><td>: ${d.Alamat}</td></tr>
+                        <tr style="border-top:1px solid #eee;"><td colspan="2" style="padding-top:5px;"><b>Komulatif Data:</b></td></tr>
+                        <tr><td><b>Total kWh</b></td><td style="color:#e53935; font-weight:bold;">: ${totalKwh.toLocaleString('id-ID')}</td></tr>
+                        <tr><td><b>Total Tx</b></td><td style="color:#43a047; font-weight:bold;">: ${totalTx.toLocaleString('id-ID')}</td></tr>
+                    </table>
+                    <a href="${gmaps}" target="_blank" class="btn-rute" style="margin-top:10px; width:100%; box-sizing:border-box; display:block;">📍 Petunjuk Arah</a>
+                </div>
+            `;
+
+            const m = L.marker([d.lat, d.lon], { icon: icons[d['TYPE CHARGE']] || icons["FAST CHARGING"] })
+                       .addTo(map).bindPopup(popupContent);
+            m.data = d;
+            markers.push(m);
         }
     });
 
+    // Populate Filters (Gunakan appendChild untuk optgroup)
     const mU = document.getElementById('mapFilterUP3'), mK = document.getElementById('mapFilterKota'), oU = document.getElementById('optUP3'), oK = document.getElementById('optKota');
+    mU.innerHTML = '<option value="all">Semua UP3</option>'; mK.innerHTML = '<option value="all">Semua Kota</option>';
+    oU.innerHTML = ''; oK.innerHTML = '';
     db.up3_list.forEach(u => { mU.add(new Option(u, u)); oU.appendChild(new Option("UP3 " + u, u)); });
     db.kota_list.forEach(k => { mK.add(new Option(k, k)); oK.appendChild(new Option(k, k)); });
 
     setupEvents(); updateDashboard(); applyMapFilter();
+}
+
+// --- DASHBOARD LOGIC (SINKRON KE TABEL) ---
+function updateDashboard() {
+    const geo = document.getElementById('evalFilterGeo').value, 
+          cat = document.getElementById('evalFilterCategory').value, 
+          type = document.getElementById('evalFilterChartType').value, 
+          time = document.getElementById('evalFilterTime').value;
+    
+    // Logika Smart Filter Tanggal
+    let lastIdx = -1;
+    for (let i = db.date_list.length - 1; i >= 0; i--) {
+        const tot = db.spklu_data.reduce((acc, s) => acc + (parseFloat(s[cat][db.date_list[i]]?.toString().replace(',','.')) || 0), 0);
+        if (tot > 0) { lastIdx = i; break; }
+    }
+    if (lastIdx === -1) lastIdx = db.date_list.length - 1;
+
+    let availableDates = db.date_list.slice(0, lastIdx + 1);
+    let displayDates = (time === 'all') ? availableDates : availableDates.slice(-parseInt(time));
+    
+    // Filter SPKLU berdasarkan wilayah terpilih di dashboard
+    const stations = db.spklu_data.filter(s => geo === 'all' || s.UP3 === geo || s.Kota === geo);
+    const vals = displayDates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',','.')) || 0), 0));
+    
+    document.getElementById('totalValue').innerText = vals.reduce((a,b)=>a+b, 0).toLocaleString('id-ID') + (cat==='kwh'?' kWh':' Tx');
+    document.getElementById('totalSPKLU').innerText = stations.length + " Unit";
+
+    renderChart(type, displayDates, vals, cat.toUpperCase());
+    
+    // SINKRONISASI: Update data tabel mengikuti filter wilayah dan waktu dashboard
+    filteredTableData = [];
+    stations.forEach(s => {
+        displayDates.forEach(d => {
+            filteredTableData.push({ 
+                n: s.nama, id: s.ID_SPKLU, u: s.UP3, ul: s.ULP, b: d, 
+                k: s.kwh[d] || 0, t: s.tx[d] || 0 
+            });
+        });
+    });
+    
+    // Urutkan tabel dari bulan terbaru
+    filteredTableData.sort((a,b) => b.b.localeCompare(a.b));
+    currentPage = 1; 
+    renderTable();
 }
 
 function setupEvents() {
@@ -102,32 +174,6 @@ function updateLegend(counts) {
     };
     legendControl.addTo(map);
 }
-
-function updateDashboard() {
-    const geo = document.getElementById('evalFilterGeo').value, cat = document.getElementById('evalFilterCategory').value, type = document.getElementById('evalFilterChartType').value, time = document.getElementById('evalFilterTime').value;
-    
-    let lastDataIndex = -1;
-    for (let i = db.date_list.length - 1; i >= 0; i--) {
-        const total = db.spklu_data.reduce((acc, s) => acc + (parseFloat(s[cat][db.date_list[i]]?.toString().replace(',','.')) || 0), 0);
-        if (total > 0) { lastDataIndex = i; break; }
-    }
-    if (lastDataIndex === -1) lastDataIndex = db.date_list.length - 1;
-
-    let availableDates = db.date_list.slice(0, lastDataIndex + 1);
-    let displayDates = (time === 'all') ? availableDates : availableDates.slice(-parseInt(time));
-    const stations = db.spklu_data.filter(s => geo === 'all' || s.UP3 === geo || s.Kota === geo);
-    const vals = displayDates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',','.')) || 0), 0));
-    
-    document.getElementById('totalValue').innerText = vals.reduce((a,b)=>a+b, 0).toLocaleString('id-ID') + (cat==='kwh'?' kWh':' Tx');
-    document.getElementById('totalSPKLU').innerText = stations.length;
-    renderChart(type, displayDates, vals, cat.toUpperCase());
-    
-    filteredTableData = [];
-    stations.forEach(s => displayDates.forEach(d => filteredTableData.push({ n: s.nama, id: s.ID_SPKLU, u: s.UP3, ul: s.ULP, b: d, k: s.kwh[d]||0, t: s.tx[d]||0 })));
-    filteredTableData.sort((a,b) => b.b.localeCompare(a.b));
-    currentPage = 1; renderTable();
-}
-
 function renderChart(type, labels, data, label) {
     if(currentChart) currentChart.destroy();
     const isLine = type === 'line';
