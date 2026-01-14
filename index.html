@@ -374,11 +374,10 @@
             document.getElementById('prevBtn').disabled = (currentPage === 1);
             document.getElementById('nextBtn').disabled = (currentPage * rowsPerPage >= filteredTableData.length);
         }
-       function renderChart(type, labels, data, label) {
+function renderChart(type, labels, data, label) {
     const ctx = document.getElementById('mainChart').getContext('2d');
     if (currentChart) currentChart.destroy();
 
-    // Tentukan pengaturan khusus berdasarkan jenis grafik (Line vs Bar)
     const isLine = (type === 'line');
 
     currentChart = new Chart(ctx, {
@@ -388,17 +387,18 @@
             datasets: [{
                 label: label,
                 data: data,
-                // Warna Biru PLN Utama
-                backgroundColor: isLine ? 'transparent' : '#00A2E9', 
+                // Mode Bar: Biru Solid | Mode Line: Biru Transparan untuk area bawah
+                backgroundColor: isLine ? 'rgba(0, 162, 233, 0.2)' : '#00A2E9', 
                 borderColor: '#0079C1',
-                borderWidth: isLine ? 3 : 2, // Garis sedikit lebih tebal jika mode Line
+                borderWidth: isLine ? 3 : 1,
                 
-                // PENGATURAN KRUSIAL:
-                fill: false,        // Menghilangkan warna biru tebal di bawah garis
-                pointRadius: isLine ? 4 : 0, // Menampilkan titik hanya pada mode Line
-                tension: 0.3,       // Membuat garis sedikit melengkung (smooth)
+                // PENGATURAN AREA BAWAH:
+                fill: isLine ? 'origin' : false, // Mengaktifkan area transparan hanya pada Line Chart
+                pointRadius: isLine ? 4 : 0,
+                pointBackgroundColor: '#0079C1',
+                tension: 0.3,
                 
-                borderRadius: type === 'bar' ? 5 : 0 // Membulatkan batang jika mode Bar
+                borderRadius: type === 'bar' ? 5 : 0
             }]
         },
         options: {
