@@ -1,211 +1,220 @@
-// 1. LINK CSV GOOGLE SHEETS
+//LINK SHARE PUBLIC CSV DARI SPREADSHEET
 const URL_SPKLU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=650444376&single=true&output=csv';
 const URL_TX = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=2044243535&single=true&output=csv';
 const URL_KWH = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1058603642&single=true&output=csv';
 
-let map, markers = [], currentChart = null;
+let map, markers = [], currentChart = null, legendControl = null;
 let db = { spklu_data: [], up3_list: [], kota_list: [], date_list: [] };
 let filteredTableData = [], currentPage = 1, rowsPerPage = 10;
 
 const cleanKey = (k) => k ? k.replace(/^\ufeff/g, "").trim() : "";
 
+// --- FETCH DATA ---
 async function fetchData() {
-    console.log("Memulai proses pengambilan data...");
     const fetchCsv = (url) => new Promise((resolve, reject) => {
         Papa.parse(url, {
             download: true, header: true, skipEmptyLines: 'greedy', transformHeader: cleanKey,
-            complete: (res) => resolve(res.data),
-            error: (err) => reject(err)
+            complete: (res) => resolve(res.data), error: (err) => reject(err)
         });
     });
 
     try {
-        const [rawSpklu, rawTx, rawKwh] = await Promise.all([
-            fetchCsv(URL_SPKLU), fetchCsv(URL_TX), fetchCsv(URL_KWH)
-        ]);
-        processData(rawSpklu, rawTx, rawKwh);
-        initApp(); 
-        console.log("Aplikasi Berhasil Dimuat.");
-    } catch (error) {
-        console.error("Gagal memuat data:", error);
-    }
+        const [rawSpklu, rawTx, rawKwh] = await Promise.all([fetchCsv(URL_SPKLU), fetchCsv(URL_TX), fetchCsv(URL_KWH)]);
+        
+        const headers = Object.keys(rawTx[0]);
+        db.date_list = headers.filter(k => k !== 'UP3' && k !== 'ULP' && k !== 'Nama Stasiun');
+        
+        const kSet = new Set(), uSet = new Set();
+        db.spklu_data = rawSpklu.filter(s => s['Nama Stasiun']).map(s => {
+            const name = s['Nama Stasiun'].trim();
+            if(s.Kota) kSet.add(s.Kota.trim());
+            if(s.UP3) uSet.add(s.UP3.trim());
+            return {
+                ...s, nama: name, lat: parseFloat(s.Latitude), lon: parseFloat(s.Longitude),
+                tx: rawTx.find(t => t['Nama Stasiun'] && t['Nama Stasiun'].trim() === name) || {},
+                kwh: rawKwh.find(k => k['Nama Stasiun'] && k['Nama Stasiun'].trim() === name) || {}
+            };
+        });
+
+        db.up3_list = Array.from(uSet).sort();
+        db.kota_list = Array.from(kSet).sort();
+        
+        updateYearFilter(); // Update daftar tahun berdasarkan header sheet
+        initApp();
+    } catch (error) { console.error("Error load data:", error); }
 }
 
-function processData(spklu, tx, kwh) {
-    const headers = Object.keys(tx[0]);
-    const dateKeys = headers.filter(k => k !== 'UP3' && k !== 'ULP' && k !== 'Nama Stasiun');
-
-    const kotaSet = new Set(), up3Set = new Set();
-
-    db.spklu_data = spklu.filter(s => s['Nama Stasiun']).map(s => {
-        const name = s['Nama Stasiun'].toString().trim();
-        const txMatch = tx.find(t => t['Nama Stasiun'] && t['Nama Stasiun'].trim() === name) || {};
-        const kwhMatch = kwh.find(k => k['Nama Stasiun'] && k['Nama Stasiun'].trim() === name) || {};
-
-        if (s.Kota) kotaSet.add(s.Kota.trim());
-        if (s.UP3) up3Set.add(s.UP3.toString().trim());
-
-        return {
-            nama: name, alamat: s.Alamat, lat: parseFloat(s.Latitude), lon: parseFloat(s.Longitude),
-            kota: s.Kota ? s.Kota.trim() : "N/A", up3: s.UP3 ? s.UP3.toString().trim() : "N/A",
-            ulp: s.ULP ? s.ULP.toString().trim() : "N/A", type: s['TYPE CHARGE'], kw: s.KW,
-            transactions: txMatch, kwh: kwhMatch
-        };
-    });
-
-    db.date_list = dateKeys;
-    db.up3_list = Array.from(up3Set).sort();
-    db.kota_list = Array.from(kotaSet).sort();
-}
-
+// --- INITIALIZE APP ---
 function initApp() {
-    // Inisialisasi Peta
-    if (map) map.remove(); 
     map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    const icons = {
+        "FAST CHARGING": L.icon({ iconUrl: 'icon/fast.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+        "MEDIUM CHARGING": L.icon({ iconUrl: 'icon/mediumfast.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+        "ULTRA FAST CHARGING": L.icon({ iconUrl: 'icon/ultrafast.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
+    };
 
     db.spklu_data.forEach(d => {
         if (!isNaN(d.lat)) {
-            const m = L.marker([d.lat, d.lon]).addTo(map).bindPopup(`<b>${d.nama}</b><br>${d.alamat}`);
+            const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}`;
+            const m = L.marker([d.lat, d.lon], { icon: icons[d['TYPE CHARGE']] || icons["FAST CHARGING"] })
+                       .addTo(map).bindPopup(`
+                <div style="min-width:160px; font-family:sans-serif;">
+                    <b style="color:#1e88e5; font-size:14px;">${d.nama}</b><br>
+                    <small>${d.Alamat}</small><br>
+                    <a href="${gmaps}" target="_blank" class="btn-rute">📍 Navigasi Sekarang</a>
+                </div>
+            `);
             m.data = d;
             markers.push(m);
         }
     });
 
-    // Populasi Filter (Peta & Evaluasi)
-    const mapUP3 = document.getElementById('mapFilterUP3');
-    const mapKota = document.getElementById('mapFilterKota');
-    const evalGeo = document.getElementById('evalFilterGeo'); // Optgroup diisi otomatis
+    // Populate Dropdowns
+    const mU = document.getElementById('mapFilterUP3'), mK = document.getElementById('mapFilterKota'), oU = document.getElementById('optUP3'), oK = document.getElementById('optKota');
+    db.up3_list.forEach(u => { mU.add(new Option(u, u)); oU.appendChild(new Option("UP3 "+u, u)); });
+    db.kota_list.forEach(k => { mK.add(new Option(k, k)); oK.appendChild(new Option(k, k)); });
 
-    // Bersihkan opsi lama
-    mapUP3.innerHTML = '<option value="all">Semua UP3</option>';
-    mapKota.innerHTML = '<option value="all">Semua Kota</option>';
-    
-    db.up3_list.forEach(u => {
-        mapUP3.add(new Option(u, u));
-        document.getElementById('optUP3').add(new Option("UP3 " + u, u));
-    });
-
-    db.kota_list.forEach(k => {
-        mapKota.add(new Option(k, k));
-        document.getElementById('optKota').add(new Option(k, k));
-    });
-
-    setupEventListeners();
+    setupEvents();
     updateDashboard();
     applyMapFilter();
 }
 
-function setupEventListeners() {
-    // Listener untuk Peta
-    ['searchNama', 'mapFilterUP3', 'mapFilterKota', 'mapFilterType'].forEach(id => {
-        const el = document.getElementById(id);
-        el.addEventListener(id === 'searchNama' ? 'input' : 'change', applyMapFilter);
-    });
-
-    // Listener untuk Evaluasi
-    ['evalFilterGeo', 'evalFilterCategory', 'evalFilterChartType', 'evalFilterTime'].forEach(id => {
-        document.getElementById(id).addEventListener('change', updateDashboard);
-    });
-
+function setupEvents() {
+    ['searchNama', 'mapFilterUP3', 'mapFilterKota', 'mapFilterType'].forEach(id => document.getElementById(id).addEventListener('input', applyMapFilter));
+    ['evalFilterGeo', 'evalFilterCategory', 'evalFilterChartType', 'evalFilterTime'].forEach(id => document.getElementById(id).addEventListener('change', updateDashboard));
+    document.getElementById('tableFilterYear').addEventListener('change', renderTable);
+    
     document.getElementById('prevBtn').onclick = () => { if(currentPage > 1) { currentPage--; renderTable(); } };
     document.getElementById('nextBtn').onclick = () => { if(currentPage * rowsPerPage < filteredTableData.length) { currentPage++; renderTable(); } };
 }
 
+// --- FILTER TAHUN LOGIC ---
+function updateYearFilter() {
+    const yearSelect = document.getElementById('tableFilterYear');
+    const years = new Set();
+    db.date_list.forEach(dateStr => {
+        const parts = dateStr.split('-');
+        if (parts.length > 1) years.add("20" + parts[1]);
+    });
+    yearSelect.innerHTML = '<option value="all">Semua Tahun</option>';
+    Array.from(years).sort().reverse().forEach(y => yearSelect.add(new Option(y, y)));
+}
+
+// --- MAP & LEGEND LOGIC ---
 function applyMapFilter() {
-    const search = document.getElementById('searchNama').value.toLowerCase();
-    const up3 = document.getElementById('mapFilterUP3').value;
-    const kota = document.getElementById('mapFilterKota').value;
-    const type = document.getElementById('mapFilterType').value;
-    const listEl = document.getElementById('spkluList');
-    listEl.innerHTML = '';
+    const s = document.getElementById('searchNama').value.toLowerCase();
+    const u = document.getElementById('mapFilterUP3').value;
+    const k = document.getElementById('mapFilterKota').value;
+    const t = document.getElementById('mapFilterType').value;
+    const list = document.getElementById('spkluList');
+    list.innerHTML = '';
+    
+    let counts = { "FAST CHARGING": 0, "MEDIUM CHARGING": 0, "ULTRA FAST CHARGING": 0 };
 
     markers.forEach(m => {
         const d = m.data;
-        const match = d.nama.toLowerCase().includes(search) && 
-                      (up3 === 'all' || d.up3 === up3) &&
-                      (kota === 'all' || d.kota === kota) && 
-                      (type === 'all' || d.type === type);
-        
+        const match = d.nama.toLowerCase().includes(s) && (u === 'all' || d.UP3 === u) && (k === 'all' || d.Kota === k) && (t === 'all' || d['TYPE CHARGE'] === t);
         if(match) {
             m.addTo(map);
-            const item = document.createElement('div');
-            item.className = 'list-item';
-            item.innerHTML = `<b>${d.nama}</b> ${d.up3} - ${d.kota}`;
-            item.onclick = () => { map.setView([d.lat, d.lon], 14); m.openPopup(); };
-            listEl.appendChild(item);
-        } else {
-            map.removeLayer(m);
-        }
+            counts[d['TYPE CHARGE']] = (counts[d['TYPE CHARGE']] || 0) + 1;
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            div.innerHTML = `<b>${d.nama}</b>${d.UP3} - ${d.Kota}`;
+            div.onclick = () => { map.setView([d.lat, d.lon], 15); m.openPopup(); };
+            list.appendChild(div);
+        } else { map.removeLayer(m); }
     });
+    updateLegend(counts);
 }
 
+function updateLegend(counts) {
+    if (legendControl) map.removeControl(legendControl);
+    legendControl = L.control({ position: 'bottomright' });
+    legendControl.onAdd = function() {
+        const div = L.DomUtil.create('div', 'legend');
+        div.innerHTML = `<b>Unit Tersedia</b>
+            <img src="icon/fast.png"> Fast <span class="legend-count">${counts["FAST CHARGING"]} Unit</span><br>
+            <img src="icon/mediumfast.png"> Medium <span class="legend-count">${counts["MEDIUM CHARGING"]} Unit</span><br>
+            <img src="icon/ultrafast.png"> Ultra <span class="legend-count">${counts["ULTRA FAST CHARGING"]} Unit</span>`;
+        return div;
+    };
+    legendControl.addTo(map);
+}
+
+// --- DASHBOARD & CHART LOGIC ---
 function updateDashboard() {
-    const geo = document.getElementById('evalFilterGeo').value;
-    const category = document.getElementById('evalFilterCategory').value;
-    const chartType = document.getElementById('evalFilterChartType').value;
-    const timeRange = document.getElementById('evalFilterTime').value;
+    const geo = document.getElementById('evalFilterGeo').value, cat = document.getElementById('evalFilterCategory').value, type = document.getElementById('evalFilterChartType').value, time = document.getElementById('evalFilterTime').value;
+    
+    // SMART FILTER: Deteksi kolom terakhir yang berisi data > 0
+    let lastDataIndex = -1;
+    for (let i = db.date_list.length - 1; i >= 0; i--) {
+        const header = db.date_list[i];
+        const total = db.spklu_data.reduce((sum, s) => sum + (parseFloat(s[cat][header]?.toString().replace(',','.')) || 0), 0);
+        if (total > 0) { lastDataIndex = i; break; }
+    }
+    if (lastDataIndex === -1) lastDataIndex = db.date_list.length - 1;
 
-    let displayDates = (timeRange === 'all') ? db.date_list : db.date_list.slice(-parseInt(timeRange));
-    const filteredStations = db.spklu_data.filter(s => geo === 'all' || s.up3 === geo || s.kota === geo);
+    let availableDates = db.date_list.slice(0, lastDataIndex + 1);
+    let displayDates = (time === 'all') ? availableDates : availableDates.slice(-parseInt(time));
+    const stations = db.spklu_data.filter(s => geo === 'all' || s.UP3 === geo || s.Kota === geo);
 
-    const valuesPerMonth = displayDates.map(date => {
-        return filteredStations.reduce((sum, s) => {
-            const val = s[category][date];
-            const num = typeof val === 'string' ? parseFloat(val.replace(',', '.')) : parseFloat(val);
-            return sum + (num || 0);
-        }, 0);
-    });
+    const vals = displayDates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',','.')) || 0), 0));
 
-    const grandTotal = valuesPerMonth.reduce((a, b) => a + b, 0);
-    document.getElementById('labelKomulatif').innerText = `Total Komulatif (${category.toUpperCase()})`;
-    document.getElementById('totalValue').innerText = grandTotal.toLocaleString('id-ID') + (category === 'kwh' ? ' kWh' : ' Tx');
-    document.getElementById('totalSPKLU').innerText = filteredStations.length + " Lokasi Terpilih";
+    document.getElementById('totalValue').innerText = vals.reduce((a,b)=>a+b, 0).toLocaleString('id-ID') + (cat==='kwh'?' kWh':' Tx');
+    document.getElementById('totalSPKLU').innerText = stations.length + " Unit";
 
-    renderChart(chartType, displayDates, valuesPerMonth, category.toUpperCase());
+    renderChart(type, displayDates, vals, cat.toUpperCase());
 
+    // Siapkan data tabel
     filteredTableData = [];
-    filteredStations.forEach(s => {
-        displayDates.forEach(date => {
-            const kVal = typeof s.kwh[date] === 'string' ? parseFloat(s.kwh[date].replace(',','.')) : parseFloat(s.kwh[date]);
-            const tVal = typeof s.transactions[date] === 'string' ? parseFloat(s.transactions[date].replace(',','.')) : parseFloat(s.transactions[date]);
-            filteredTableData.push({
-                nama: s.nama, up3: s.up3, ulp: s.ulp, bulan: date,
-                kwh: kVal || 0, tx: tVal || 0
-            });
-        });
-    });
-    filteredTableData.sort((a,b) => b.bulan.localeCompare(a.bulan));
-    currentPage = 1;
+    stations.forEach(s => displayDates.forEach(d => filteredTableData.push({ n: s.nama, u: s.UP3, ul: s.ULP, b: d, k: s.kwh[d]||0, t: s.tx[d]||0 })));
+    filteredTableData.sort((a,b) => b.b.localeCompare(a.b));
+    currentPage = 1; 
     renderTable();
 }
 
 function renderChart(type, labels, data, label) {
     const ctx = document.getElementById('mainChart').getContext('2d');
-    if(currentChart) currentChart.destroy();
+    if (currentChart) currentChart.destroy();
+    const isLine = (type === 'line');
+
     currentChart = new Chart(ctx, {
         type: type,
         data: {
-            labels,
-            datasets: [{ label, data, borderColor: '#1e88e5', backgroundColor: 'rgba(30, 136, 229, 0.2)', fill: true, tension: 0.3 }]
+            labels: labels,
+            datasets: [{
+                label: label, data: data,
+                backgroundColor: isLine ? 'rgba(0, 162, 233, 0.2)' : '#00A2E9',
+                borderColor: '#0079C1',
+                borderWidth: isLine ? 3 : 1,
+                fill: isLine ? 'origin' : false,
+                tension: 0.3, pointRadius: isLine ? 4 : 0
+            }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
     });
 }
 
 function renderTable() {
+    const selectedYear = document.getElementById('tableFilterYear').value;
+    let dataForTable = filteredTableData;
+    if (selectedYear !== 'all') {
+        dataForTable = filteredTableData.filter(r => r.b.includes("-" + selectedYear.substring(2)));
+    }
+
     const start = (currentPage - 1) * rowsPerPage;
-    const pageData = filteredTableData.slice(start, start + rowsPerPage);
-    document.getElementById('tableBody').innerHTML = pageData.map(r => `
-        <tr>
-            <td>${r.nama}</td>
-            <td>${r.up3} (${r.ulp})</td>
-            <td>${r.bulan}</td>
-            <td>${r.kwh.toLocaleString('id-ID')}</td>
-            <td>${r.tx.toLocaleString('id-ID')}</td>
-        </tr>
-    `).join('');
-    document.getElementById('pageInfo').innerText = `Halaman ${currentPage} dari ${Math.ceil(filteredTableData.length / rowsPerPage)}`;
+    const pageData = dataForTable.slice(start, start + rowsPerPage);
+    document.getElementById('tableBody').innerHTML = pageData.map(r => `<tr><td>${r.n}</td><td>${r.u} (${r.ul})</td><td>${r.b}</td><td>${r.k.toLocaleString('id-ID')}</td><td>${r.t.toLocaleString('id-ID')}</td></tr>`).join('');
+    
+    const totalPages = Math.ceil(dataForTable.length / rowsPerPage) || 1;
+    document.getElementById('pageInfo').innerText = `Hal ${currentPage} dari ${totalPages}`;
+    document.getElementById('prevBtn').disabled = (currentPage === 1);
+    document.getElementById('nextBtn').disabled = (currentPage * rowsPerPage >= dataForTable.length);
 }
 
 fetchData();
