@@ -46,44 +46,100 @@ async function fetchData() {
 
 // --- INITIALIZE APP ---
 function initApp() {
+    // 1. Reset Peta jika sudah ada (mencegah error re-inisialisasi)
+    if (map) map.remove();
+    
+    // Inisialisasi Peta - Zoom diletakkan di kanan bawah (zoomControl: false)
     map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 7);
+    
+    // Tambah Tile Layer OpenStreetMap dengan Kredit/Attribution
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+
+    // Tambah Kontrol Zoom di Pojok Kanan Bawah
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+    // 2. Definisi Custom Icon berdasarkan Type Charging (File di folder icon/)
     const icons = {
-        "FAST CHARGING": L.icon({ iconUrl: 'icon/fast.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-        "MEDIUM CHARGING": L.icon({ iconUrl: 'icon/mediumfast.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-        "ULTRA FAST CHARGING": L.icon({ iconUrl: 'icon/ultrafast.png', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
+        "FAST CHARGING": L.icon({ 
+            iconUrl: 'icon/fast.png', 
+            iconSize: [32, 32], 
+            iconAnchor: [16, 32], 
+            popupAnchor: [0, -32] 
+        }),
+        "MEDIUM CHARGING": L.icon({ 
+            iconUrl: 'icon/mediumfast.png', 
+            iconSize: [32, 32], 
+            iconAnchor: [16, 32], 
+            popupAnchor: [0, -32] 
+        }),
+        "ULTRA FAST CHARGING": L.icon({ 
+            iconUrl: 'icon/ultrafast.png', 
+            iconSize: [32, 32], 
+            iconAnchor: [16, 32], 
+            popupAnchor: [0, -32] 
+        })
     };
 
+    // 3. Tambah Marker SPKLU ke Peta
     db.spklu_data.forEach(d => {
-        if (!isNaN(d.lat)) {
+        if (!isNaN(d.lat) && !isNaN(d.lon)) {
+            // URL Navigasi Google Maps (otomatis mendeteksi lokasi user)
             const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}`;
-            const m = L.marker([d.lat, d.lon], { icon: icons[d['TYPE CHARGE']] || icons["FAST CHARGING"] })
-                       .addTo(map).bindPopup(`
-                <div style="min-width:160px; font-family:sans-serif;">
-                    <b style="color:#1e88e5; font-size:14px;">${d.nama}</b><br>
-                    <small>${d.Alamat}</small><br>
-                    <a href="${gmaps}" target="_blank" class="btn-rute">📍 Navigasi Sekarang</a>
-                </div>
-            `);
-            m.data = d;
+            
+            // Pilih icon berdasarkan tipe, default ke Fast jika tidak ditemukan
+            const selectedIcon = icons[d['TYPE CHARGE']] || icons["FAST CHARGING"];
+
+            const m = L.marker([d.lat, d.lon], { icon: selectedIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <div style="min-width:160px; font-family:sans-serif;">
+                        <b style="color:#1e88e5; font-size:14px;">${d.nama}</b><br>
+                        <small>${d.Alamat}</small><br>
+                        <span style="font-size:11px; display:block; margin-top:5px;">
+                            <b>Tipe:</b> ${d['TYPE CHARGE']}
+                        </span>
+                        <a href="${gmaps}" target="_blank" class="btn-rute" 
+                           style="display:block; margin-top:10px; text-align:center; background:#1e88e5; color:white; padding:6px; border-radius:4px; text-decoration:none; font-weight:bold; font-size:11px;">
+                           📍 Navigasi Sekarang
+                        </a>
+                    </div>
+                `);
+            m.data = d; // Simpan data di objek marker untuk keperluan filter
             markers.push(m);
         }
     });
 
-    // Populate Dropdowns
-    const mU = document.getElementById('mapFilterUP3'), mK = document.getElementById('mapFilterKota'), oU = document.getElementById('optUP3'), oK = document.getElementById('optKota');
-    db.up3_list.forEach(u => { mU.add(new Option(u, u)); oU.appendChild(new Option("UP3 "+u, u)); });
-    db.kota_list.forEach(k => { mK.add(new Option(k, k)); oK.appendChild(new Option(k, k)); });
+    // 4. Populasi Filter (Peta & Evaluasi)
+    const mUP3 = document.getElementById('mapFilterUP3');
+    const mKota = document.getElementById('mapFilterKota');
+    const oUP3 = document.getElementById('optUP3'); // Elemen <optgroup>
+    const oKota = document.getElementById('optKota'); // Elemen <optgroup>
 
+    // Reset isi dropdown agar tidak terjadi duplikasi saat re-render
+    if (mUP3) mUP3.innerHTML = '<option value="all">Semua UP3</option>';
+    if (mKota) mKota.innerHTML = '<option value="all">Semua Kota</option>';
+    if (oUP3) oUP3.innerHTML = '';
+    if (oKota) oKota.innerHTML = '';
+
+    // Isi UP3 ke Filter Peta dan Filter Evaluasi
+    db.up3_list.forEach(u => {
+        if (mUP3) mUP3.add(new Option(u, u));
+        if (oUP3) oUP3.appendChild(new Option("UP3 " + u, u)); // appendChild khusus optgroup
+    });
+
+    // Isi Kota ke Filter Peta dan Filter Evaluasi
+    db.kota_list.forEach(k => {
+        if (mKota) mKota.add(new Option(k, k));
+        if (oKota) oKota.appendChild(new Option(k, k)); // appendChild khusus optgroup
+    });
+
+    // Jalankan fungsi event listener, dashboard, dan filter peta pertama kali
     setupEvents();
     updateDashboard();
     applyMapFilter();
 }
-
 function setupEvents() {
     ['searchNama', 'mapFilterUP3', 'mapFilterKota', 'mapFilterType'].forEach(id => document.getElementById(id).addEventListener('input', applyMapFilter));
     ['evalFilterGeo', 'evalFilterCategory', 'evalFilterChartType', 'evalFilterTime'].forEach(id => document.getElementById(id).addEventListener('change', updateDashboard));
