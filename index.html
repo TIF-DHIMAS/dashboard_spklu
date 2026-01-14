@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div class="navbar">
         <b>PLN Kalbar - SPKLU Mobile</b>
         <div class="menu">
@@ -39,9 +40,16 @@
     <div id="evaluation-layer">
         <div class="container">
             <div class="summary-grid">
-                <div class="sum-card"><span>Total Komulatif</span><h2 id="totalValue">0</h2></div>
-                <div class="sum-card" style="border-left-color: #43a047;"><span>Unit SPKLU Terpilih</span><h2 id="totalSPKLU" style="color: #43a047;">0</h2></div>
+                <div class="sum-card">
+                    <span>Total Komulatif</span>
+                    <h2 id="totalValue">0</h2>
+                </div>
+                <div class="sum-card" style="border-left-color: #43a047;">
+                    <span>Unit Terpilih</span>
+                    <h2 id="totalSPKLU" style="color: #43a047;">0</h2>
+                </div>
             </div>
+
             <div class="filter-grid">
                 <div class="filter-item">
                     <label>Wilayah (UP3 / Kota)</label>
@@ -51,23 +59,57 @@
                         <optgroup label="Kota / Kabupaten" id="optKota"></optgroup>
                     </select>
                 </div>
-                <div class="filter-item"><label>Parameter</label><select id="evalFilterCategory"><option value="kwh">kWh</option><option value="transactions">Transaksi</option></select></div>
-                <div class="filter-item"><label>Grafik</label><select id="evalFilterChartType"><option value="line">Line</option><option value="bar">Bar</option></select></div>
-                <div class="filter-item"><label>Waktu</label><select id="evalFilterTime"><option value="12">12 Bulan</option><option value="all">Semua</option></select></div>
+                <div class="filter-item">
+                    <label>Parameter Data</label>
+                    <select id="evalFilterCategory">
+                        <option value="kwh">Konsumsi Energi (kWh)</option>
+                        <option value="transactions">Jumlah Transaksi</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Tampilan Grafik</label>
+                    <select id="evalFilterChartType">
+                        <option value="line">Line Chart (Tren)</option>
+                        <option value="bar">Bar Chart (Batang)</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>Rentang Waktu</label>
+                    <select id="evalFilterTime">
+                        <option value="12">12 Bulan Terakhir</option>
+                        <option value="24">24 Bulan Terakhir</option>
+                        <option value="all">Semua Data</option>
+                    </select>
+                </div>
             </div>
+
             <div class="chart-box"><canvas id="mainChart"></canvas></div>
-            <h3 style="margin-top: 40px;">Rincian Data Tabel</h3>
+
+            <h3 style="margin-top: 40px;">Rincian Data Bulanan</h3>
             <div class="table-filter-container">
                 <label>Filter Tahun Tabel:</label>
                 <select id="tableFilterYear"><option value="all">Semua Tahun</option></select>
             </div>
+
             <div class="table-container">
                 <table>
-                    <thead><tr><th>Nama Stasiun</th><th>Unit Kerja</th><th>Bulan</th><th>kWh</th><th>Transaksi</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Nama Stasiun (ID)</th>
+                            <th>Unit Kerja</th>
+                            <th>Bulan</th>
+                            <th>kWh</th>
+                            <th>Transaksi</th>
+                        </tr>
+                    </thead>
                     <tbody id="tableBody"></tbody>
                 </table>
             </div>
-            <div class="pagination"><button id="prevBtn">Prev</button><span id="pageInfo">Hal 1</span><button id="nextBtn">Next</button></div>
+            <div class="pagination">
+                <button id="prevBtn">Prev</button>
+                <span id="pageInfo">Hal 1</span>
+                <button id="nextBtn">Next</button>
+            </div>
         </div>
     </div>
 
