@@ -18,19 +18,23 @@
 
     <div id="map-container">
         <div class="panel">
-            <h3>Filter SPKLU</h3>
-            <label>Pencarian Nama</label>
-            <input type="text" id="searchNama" placeholder="Cari stasiun...">
-            <label>UP3</label>
+            <h3>Pencarian & Filter</h3>
+            <label>Nama SPKLU</label>
+            <input type="text" id="searchNama" placeholder="Ketik nama stasiun...">
+            
+            <label>Filter UP3</label>
             <select id="mapFilterUP3"><option value="all">Semua UP3</option></select>
+
             <label>Kabupaten / Kota</label>
             <select id="mapFilterKota"><option value="all">Semua Kota</option></select>
-            <label>Tipe Charger</label>
+
+            <label>Tipe Charging</label>
             <select id="mapFilterType">
                 <option value="all">Semua Tipe</option>
                 <option value="FAST CHARGING">Fast Charging</option>
                 <option value="MEDIUM CHARGING">Medium Charging</option>
                 <option value="ULTRA FAST CHARGING">Ultra Fast Charging</option>
+                <option value="SPKLU R2">SPKLU R2</option>
             </select>
             <div class="list" id="spkluList"></div>
         </div>
@@ -44,9 +48,13 @@
                     <span>Total Komulatif</span>
                     <h2 id="totalValue">0</h2>
                 </div>
-                <div class="sum-card" style="border-left-color: #43a047;">
+                <div class="sum-card" id="cardRupiah">
+                    <span>Estimasi Pendapatan (Rp)</span>
+                    <h2 id="totalRupiah">Rp 0</h2>
+                </div>
+                <div class="sum-card" id="cardUnit">
                     <span>Unit Terpilih</span>
-                    <h2 id="totalSPKLU" style="color: #43a047;">0</h2>
+                    <h2 id="totalSPKLU">0</h2>
                 </div>
             </div>
 
@@ -60,6 +68,10 @@
                     </select>
                 </div>
                 <div class="filter-item">
+                    <label>Pilih Tahun</label>
+                    <select id="evalFilterYear"><option value="all">Semua Tahun</option></select>
+                </div>
+                <div class="filter-item">
                     <label>Parameter Data</label>
                     <select id="evalFilterCategory">
                         <option value="kwh">Konsumsi Energi (kWh)</option>
@@ -69,16 +81,8 @@
                 <div class="filter-item">
                     <label>Tampilan Grafik</label>
                     <select id="evalFilterChartType">
-                        <option value="line">Line Chart (Tren)</option>
-                        <option value="bar">Bar Chart (Batang)</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label>Rentang Waktu</label>
-                    <select id="evalFilterTime">
-                        <option value="12">12 Bulan Terakhir</option>
-                        <option value="24">24 Bulan Terakhir</option>
-                        <option value="all">Semua Data</option>
+                        <option value="line">Line Chart</option>
+                        <option value="bar">Bar Chart</option>
                     </select>
                 </div>
             </div>
@@ -86,11 +90,6 @@
             <div class="chart-box"><canvas id="mainChart"></canvas></div>
 
             <h3 style="margin-top: 40px;">Rincian Data Bulanan</h3>
-            <div class="table-filter-container">
-                <label>Filter Tahun Tabel:</label>
-                <select id="tableFilterYear"><option value="all">Semua Tahun</option></select>
-            </div>
-
             <div class="table-container">
                 <table>
                     <thead>
@@ -106,9 +105,9 @@
                 </table>
             </div>
             <div class="pagination">
-                <button id="prevBtn">Prev</button>
-                <span id="pageInfo">Hal 1</span>
-                <button id="nextBtn">Next</button>
+                <button id="prevBtn">Sebelumnya</button>
+                <span id="pageInfo">Halaman 1</span>
+                <button id="nextBtn">Selanjutnya</button>
             </div>
         </div>
     </div>
