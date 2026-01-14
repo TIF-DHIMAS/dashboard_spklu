@@ -1,6 +1,6 @@
-const URL_SPKLU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=650444376&single=true&output=csv';
-const URL_TX = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=2044243535&single=true&output=csv';
-const URL_KWH = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1058603642&single=true&output=csv';
+const URL_SPKLU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1832472677&single=true&output=csv'
+const URL_TX = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=380492498&single=true&output=csv'
+const URL_KWH = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1097239958&single=true&output=csv'
 
 let map, markers = [], currentChart = null, legendControl = null;
 let db = { spklu_data: [], up3_list: [], kota_list: [], date_list: [] };
@@ -13,17 +13,29 @@ async function fetchData() {
         processData(s, t, k);
         updateYearFilter();
         initApp();
-    } catch (e) { console.error("Gagal memuat data:", e); }
+    } catch (e) { console.error("Error:", e); }
 }
 
 function processData(spklu, tx, kwh) {
-    db.date_list = Object.keys(tx[0]).filter(key => !['UP3', 'ULP', 'Nama Stasiun'].includes(key));
+    // Header dimulai setelah kolom ID_SPKLU dan Nama Stasiun
+    db.date_list = Object.keys(tx[0]).filter(key => !['UP3', 'ULP', 'ID_SPKLU', 'Nama Stasiun'].includes(key));
     const kSet = new Set(), uSet = new Set();
+    
     db.spklu_data = spklu.filter(row => row['Nama Stasiun']).map(row => {
         const n = row['Nama Stasiun'].trim();
+        const id = row['ID_SPKLU'];
         if(row.Kota) kSet.add(row.Kota.trim());
         if(row.UP3) uSet.add(row.UP3.trim());
-        return { ...row, nama: n, lat: parseFloat(row.Latitude), lon: parseFloat(row.Longitude), tx: tx.find(i => i['Nama Stasiun'] === n) || {}, kwh: kwh.find(i => i['Nama Stasiun'] === n) || {} };
+        
+        // Cari data berdasarkan ID_SPKLU agar lebih akurat
+        return { 
+            ...row, 
+            nama: n, 
+            lat: parseFloat(row.Latitude), 
+            lon: parseFloat(row.Longitude), 
+            tx: tx.find(i => i['ID_SPKLU'] === id) || {}, 
+            kwh: kwh.find(i => i['ID_SPKLU'] === id) || {} 
+        };
     });
     db.up3_list = [...uSet].sort(); db.kota_list = [...kSet].sort();
 }
@@ -43,12 +55,11 @@ function initApp() {
     db.spklu_data.forEach(d => {
         if (!isNaN(d.lat)) {
             const m = L.marker([d.lat, d.lon], { icon: icons[d['TYPE CHARGE']] || icons["FAST CHARGING"] }).addTo(map)
-                .bindPopup(`<b>${d.nama}</b><br><a href="http://google.com/maps?q=${d.lat},${d.lon}" target="_blank" class="btn-rute">📍 Navigasi</a>`);
+                .bindPopup(`<b>${d.nama}</b><br><small>ID: ${d.ID_SPKLU}</small><br><a href="http://google.com/maps?q=${d.lat},${d.lon}" target="_blank" class="btn-rute">📍 Navigasi</a>`);
             m.data = d; markers.push(m);
         }
     });
 
-    // PERBAIKAN: Gunakan appendChild untuk optgroup
     const mU = document.getElementById('mapFilterUP3'), mK = document.getElementById('mapFilterKota'), oU = document.getElementById('optUP3'), oK = document.getElementById('optKota');
     db.up3_list.forEach(u => { mU.add(new Option(u, u)); oU.appendChild(new Option("UP3 " + u, u)); });
     db.kota_list.forEach(k => { mK.add(new Option(k, k)); oK.appendChild(new Option(k, k)); });
@@ -86,7 +97,7 @@ function updateLegend(counts) {
     legendControl = L.control({ position: 'bottomright' });
     legendControl.onAdd = () => {
         const div = L.DomUtil.create('div', 'legend');
-        div.innerHTML = `<b>Unit Tersedia</b><br><img src="icon/fast.png"> Fast: ${counts["FAST CHARGING"]}<br><img src="icon/mediumfast.png"> Medium: ${counts["MEDIUM CHARGING"]}<br><img src="icon/ultrafast.png"> Ultra: ${counts["ULTRA FAST CHARGING"]}`;
+        div.innerHTML = `<b>Unit Tersedia</b><br><img src="icon/fast.png" width="16"> Fast: ${counts["FAST CHARGING"]}<br><img src="icon/mediumfast.png" width="16"> Med: ${counts["MEDIUM CHARGING"]}<br><img src="icon/ultrafast.png" width="16"> Ultra: ${counts["ULTRA FAST CHARGING"]}`;
         return div;
     };
     legendControl.addTo(map);
@@ -94,18 +105,25 @@ function updateLegend(counts) {
 
 function updateDashboard() {
     const geo = document.getElementById('evalFilterGeo').value, cat = document.getElementById('evalFilterCategory').value, type = document.getElementById('evalFilterChartType').value, time = document.getElementById('evalFilterTime').value;
-    let dates = db.date_list.filter(d => {
-        const total = db.spklu_data.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.replace(',', '.')) || 0), 0);
-        return total > 0;
-    });
-    if(time !== 'all') dates = dates.slice(-parseInt(time));
+    
+    let lastDataIndex = -1;
+    for (let i = db.date_list.length - 1; i >= 0; i--) {
+        const total = db.spklu_data.reduce((acc, s) => acc + (parseFloat(s[cat][db.date_list[i]]?.toString().replace(',','.')) || 0), 0);
+        if (total > 0) { lastDataIndex = i; break; }
+    }
+    if (lastDataIndex === -1) lastDataIndex = db.date_list.length - 1;
+
+    let availableDates = db.date_list.slice(0, lastDataIndex + 1);
+    let displayDates = (time === 'all') ? availableDates : availableDates.slice(-parseInt(time));
     const stations = db.spklu_data.filter(s => geo === 'all' || s.UP3 === geo || s.Kota === geo);
-    const vals = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.replace(',', '.')) || 0), 0));
+    const vals = displayDates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',','.')) || 0), 0));
+    
     document.getElementById('totalValue').innerText = vals.reduce((a,b)=>a+b, 0).toLocaleString('id-ID') + (cat==='kwh'?' kWh':' Tx');
     document.getElementById('totalSPKLU').innerText = stations.length;
-    renderChart(type, dates, vals, cat.toUpperCase());
+    renderChart(type, displayDates, vals, cat.toUpperCase());
+    
     filteredTableData = [];
-    stations.forEach(s => dates.forEach(d => filteredTableData.push({ n: s.nama, u: s.UP3, ul: s.ULP, b: d, k: s.kwh[d]||0, t: s.tx[d]||0 })));
+    stations.forEach(s => displayDates.forEach(d => filteredTableData.push({ n: s.nama, id: s.ID_SPKLU, u: s.UP3, ul: s.ULP, b: d, k: s.kwh[d]||0, t: s.tx[d]||0 })));
     filteredTableData.sort((a,b) => b.b.localeCompare(a.b));
     currentPage = 1; renderTable();
 }
@@ -126,7 +144,7 @@ function renderTable() {
     if(year !== 'all') tableData = tableData.filter(r => r.b.includes("-" + year.substring(2)));
     const start = (currentPage - 1) * rowsPerPage;
     const pageData = tableData.slice(start, start + rowsPerPage);
-    document.getElementById('tableBody').innerHTML = pageData.map(r => `<tr><td>${r.n}</td><td>${r.u} (${r.ul})</td><td>${r.b}</td><td>${r.k}</td><td>${r.t}</td></tr>`).join('');
+    document.getElementById('tableBody').innerHTML = pageData.map(r => `<tr><td>${r.n} (${r.id})</td><td>${r.u} (${r.ul})</td><td>${r.b}</td><td>${r.k}</td><td>${r.t}</td></tr>`).join('');
     document.getElementById('pageInfo').innerText = `Hal ${currentPage} dari ${Math.ceil(tableData.length/rowsPerPage) || 1}`;
 }
 
