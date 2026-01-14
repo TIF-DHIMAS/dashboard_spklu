@@ -374,7 +374,39 @@
             document.getElementById('prevBtn').disabled = (currentPage === 1);
             document.getElementById('nextBtn').disabled = (currentPage * rowsPerPage >= filteredTableData.length);
         }
+        function renderChart(type, labels, data, label) {
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    if (currentChart) currentChart.destroy();
 
+    currentChart = new Chart(ctx, {
+        type: type,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: label,
+                data: data,
+                // --- BAGIAN MERUBAH WARNA ---
+                backgroundColor: '#00A2E9', // Warna Biru PLN (Isi Batang)
+                borderColor: '#0079C1',     // Warna Biru Gelap (Garis Pinggir)
+                // ----------------------------
+                borderWidth: 2,
+                borderRadius: 5,            // Membuat sudut batang agak bulat (modern)
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
         fetchData();
     </script>
 </body>
