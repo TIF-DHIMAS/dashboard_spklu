@@ -131,53 +131,26 @@ function updateLegend(counts) {
 
 // --- DASHBOARD ---
 function updateDashboard() {
-    const geo = document.getElementById('evalFilterGeo').value, cat = document.getElementById('evalFilterCategory').value, year = document.getElementById('evalFilterYear').value, txRange = document.getElementById('evalFilterTxRange').value;
+    const geo = document.getElementById('evalFilterGeo').value, cat = document.getElementById('evalFilterCategory').value, type = document.getElementById('evalFilterChartType').value, year = document.getElementById('evalFilterYear').value;
 
     let dates = db.date_list;
     if (year !== 'all') dates = dates.filter(d => d.includes("-" + year.substring(2)));
 
-    // Filter & hitung per stasiun
-    filteredTableData = db.spklu_data.filter(s => (geo === 'all' || s.UP3 === geo || s.Kota === geo))
-    .map(s => {
-        const totalTx = dates.reduce((acc, d) => acc + (parseFloat(s.tx[d]?.toString().replace(',','.')) || 0), 0);
-        const totalKwh = dates.reduce((acc, d) => acc + (parseFloat(s.kwh[d]?.toString().replace(',','.')) || 0), 0);
-        
-        let status = "Sangat Padat", color = "bg-info", rec = "Pertahankan / Tambah Unit";
-        if (totalTx === 0) { status = "Tidak Ada Transaksi"; color = "bg-danger"; rec = "Prioritas Relokasi"; }
-        else if (totalTx < 3) { status = "Kurang Efektif"; color = "bg-danger"; rec = "Rekomendasi Relokasi"; }
-        else if (totalTx < 5) { status = "Cukup Efektif"; color = "bg-warning"; rec = "Evaluasi Rutin"; }
-        else if (totalTx < 10) { status = "Efektif"; color = "bg-success"; rec = "Lokasi Sesuai"; }
+    // Smart Filter: Hanya tampilkan bulan yang berisi data > 0 (untuk grafik line)
+    dates = dates.filter(d => db.spklu_data.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',','.')) || 0), 0) > 0);
 
-        return { n: s.nama, u: s.UP3, tx: totalTx, kwh: totalKwh, status, color, rec };
-    });
+    const stations = db.spklu_data.filter(s => geo === 'all' || s.UP3 === geo || s.Kota === geo);
+    const vals = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',','.')) || 0), 0));
+    const totalKwh = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s['kwh'][d]?.toString().replace(',','.')) || 0), 0)).reduce((a,b)=>a+b, 0);
 
-    // Apply Filter Range Transaksi
-    if (txRange !== 'all') {
-        filteredTableData = filteredTableData.filter(d => {
-            if (txRange === '0') return d.tx === 0;
-            if (txRange === 'under3') return d.tx > 0 && d.tx < 3;
-            if (txRange === 'under5') return d.tx < 5;
-            if (txRange === 'under10') return d.tx < 10;
-            if (txRange === 'over10') return d.tx >= 10;
-        });
-    }
+    document.getElementById('totalValue').innerText = vals.reduce((a,b)=>a+b, 0).toLocaleString('id-ID') + (cat==='kwh'?' kWh':' Tx');
+    document.getElementById('totalRupiah').innerText = "Rp " + (totalKwh * TARIF_KWH).toLocaleString('id-ID');
+    document.getElementById('totalSPKLU').innerText = stations.length;
 
-    // Totals
-    const totalVal = filteredTableData.reduce((a, b) => a + (cat === 'transactions' ? b.tx : b.kwh), 0);
-    const totalKwhAkumulasi = filteredTableData.reduce((a, b) => a + b.kwh, 0);
-    const relokasiCount = filteredTableData.filter(d => d.tx < 3).length;
-
-    document.getElementById('totalValue').innerText = totalVal.toLocaleString('id-ID') + (cat === 'transactions' ? ' Tx' : ' kWh');
-    document.getElementById('totalRupiah').innerText = "Rp " + (totalKwhAkumulasi * TARIF_KWH).toLocaleString('id-ID');
-    document.getElementById('relocationCount').innerText = relokasiCount + " Unit";
-
-    // Chart
-    const chartData = dates.map(d => filteredTableData.reduce((acc, s) => {
-        const stationOrigin = db.spklu_data.find(x => x.nama === s.n);
-        return acc + (parseFloat(stationOrigin[cat][d]?.toString().replace(',','.')) || 0);
-    }, 0));
-    renderChart(dates, chartData, cat === 'transactions' ? 'Transaksi' : 'kWh');
-
+    renderChart(type, dates, vals, cat.toUpperCase());
+    filteredTableData = [];
+    stations.forEach(s => dates.forEach(d => { if((parseFloat(s.kwh[d])||0)>0) filteredTableData.push({ n: s.nama, id: s.ID_SPKLU, u: s.UP3, ul: s.ULP, b: d, k: s.kwh[d]||0, t: s.tx[d]||0 }); }));
+    filteredTableData.sort((a,b) => b.b.localeCompare(a.b));
     currentPage = 1; renderTable();
 }
 
