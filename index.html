@@ -2,14 +2,22 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Monitoring SPKLU PLN UID Kalbar</title>
+    <title>Monitoring & Analisis SPKLU PLN UID Kalbar</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Tambahan style singkat untuk status */
+        .status-badge { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; color: white; }
+        .bg-red { background-color: #e74c3c; }
+        .bg-orange { background-color: #f39c12; }
+        .bg-green { background-color: #27ae60; }
+        .bg-blue { background-color: #2980b9; }
+    </style>
 </head>
 <body>
 
     <div class="navbar">
-        <b>SPKLU - PLN Kalbar</b>
+        <b>SPKLU - PLN Kalbar (Sistem Rekomendasi Relokasi)</b>
         <div class="menu">
             <a href="#map-container">Peta Lokasi</a>
             <a href="#evaluation-layer">Dashboard Evaluasi</a>
@@ -45,16 +53,16 @@
         <div class="container">
             <div class="summary-grid">
                 <div class="sum-card">
-                    <span>Total Komulatif</span>
+                    <span>Total Komulatif (Filter)</span>
                     <h2 id="totalValue">0</h2>
                 </div>
                 <div class="sum-card" id="cardRupiah">
                     <span>Estimasi Pendapatan (Rp)</span>
                     <h2 id="totalRupiah">Rp 0</h2>
                 </div>
-                <div class="sum-card" id="cardUnit">
-                    <span>Unit Terpilih</span>
-                    <h2 id="totalSPKLU">0</h2>
+                <div class="sum-card">
+                    <span>Rekomendasi Relokasi</span>
+                    <h2 id="relocationCount" style="color: #e74c3c;">0 Unit</h2>
                 </div>
             </div>
 
@@ -68,8 +76,15 @@
                     </select>
                 </div>
                 <div class="filter-item">
-                    <label>Pilih Tahun</label>
-                    <select id="evalFilterYear"><option value="all">Semua Tahun</option></select>
+                    <label>Analisis Produktivitas (Tx)</label>
+                    <select id="evalFilterProductivity">
+                        <option value="all">Semua Status</option>
+                        <option value="0">0 Transaksi (Sangat Tidak Efektif)</option>
+                        <option value="under3">< 3 Transaksi (Kurang Efektif)</option>
+                        <option value="under5">< 5 Transaksi (Cukup Efektif)</option>
+                        <option value="under10">< 10 Transaksi (Efektif)</option>
+                        <option value="over10">> 10 Transaksi (Sangat Efektif)</option>
+                    </select>
                 </div>
                 <div class="filter-item">
                     <label>Parameter Data</label>
@@ -79,26 +94,23 @@
                     </select>
                 </div>
                 <div class="filter-item">
-                    <label>Tampilan Grafik</label>
-                    <select id="evalFilterChartType">
-                        <option value="line">Line Chart</option>
-                        <option value="bar">Bar Chart</option>
-                    </select>
+                    <label>Pilih Tahun</label>
+                    <select id="evalFilterYear"><option value="all">Semua Tahun</option></select>
                 </div>
             </div>
 
             <div class="chart-box"><canvas id="mainChart"></canvas></div>
 
-            <h3 style="margin-top: 40px;">Rincian Data Bulanan</h3>
+            <h3 style="margin-top: 40px;">Tabel Rekomendasi Strategis</h3>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Nama Stasiun (ID)</th>
+                            <th>Nama Stasiun</th>
                             <th>Unit Kerja</th>
-                            <th>Bulan</th>
-                            <th>kWh</th>
-                            <th>Transaksi</th>
+                            <th>Avg Tx/Bulan</th>
+                            <th>Status Efektivitas</th>
+                            <th>Rekomendasi Tindakan</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
