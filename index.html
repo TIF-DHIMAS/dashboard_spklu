@@ -68,17 +68,6 @@
                     </select>
                 </div>
                 <div class="filter-item">
-                    <label>Analisis Produktivitas (Tx)</label>
-                    <select id="evalFilterProductivity">
-                        <option value="all">Semua Status</option>
-                        <option value="0">0 Transaksi (Sangat Tidak Efektif)</option>
-                        <option value="under3">< 3 Transaksi (Kurang Efektif)</option>
-                        <option value="under5">< 5 Transaksi (Cukup Efektif)</option>
-                        <option value="under10">< 10 Transaksi (Efektif)</option>
-                        <option value="over10">> 10 Transaksi (Sangat Efektif)</option>
-                    </select>
-                </div>
-                <div class="filter-item">
                     <label>Pilih Tahun</label>
                     <select id="evalFilterYear"><option value="all">Semua Tahun</option></select>
                 </div>
@@ -100,16 +89,16 @@
 
             <div class="chart-box"><canvas id="mainChart"></canvas></div>
 
-            <h3 style="margin-top: 40px;">Rekomendasi Relokasi & Efektivitas</h3>
+            <h3 style="margin-top: 40px;">Rincian Data Bulanan</h3>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>Nama Stasiun</th>
+                            <th>Nama Stasiun (ID)</th>
                             <th>Unit Kerja</th>
-                            <th>Total Transaksi</th>
-                            <th>Status Efektivitas</th>
-                            <th>Saran Relokasi</th>
+                            <th>Bulan</th>
+                            <th>kWh</th>
+                            <th>Transaksi</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
