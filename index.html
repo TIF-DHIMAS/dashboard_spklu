@@ -43,6 +43,14 @@
                 <option value="ULTRA FAST CHARGING">Ultra Fast Charging</option>
                 <option value="SPKLU R2">SPKLU R2</option>
             </select>
+
+            <label>Filter Status Relokasi</label>
+            <select id="mapFilterRelocation">
+                <option value="all">Semua Status</option>
+                <option value="priority">Prioritas Relokasi</option>
+                <option value="optimal">Status Optimal</option>
+            </select>
+            
             <div class="list" id="spkluList"></div>
         </div>
         <div id="map"></div>
@@ -93,12 +101,12 @@
                     </select>
                 </div>
                 <div class="filter-item">
-                <label>Analisis Relokasi</label>
-                <select id="evalFilterRelocation">
-                <option value="all">Semua Status</option>
-                <option value="priority" style="color: #d32f2f;">● Prioritas (< 30 Tx/Bulan)</option>
-                <option value="optimal" style="color: #388e3c;">● Optimal (≥ 30 Tx/Bulan)</option>
-                </select>
+                    <label>Analisis Relokasi (Dashboard)</label>
+                    <select id="evalFilterRelocation">
+                        <option value="all">Semua Status</option>
+                        <option value="priority">Prioritas (< 30 Tx)</option>
+                        <option value="optimal">Optimal (≥ 30 Tx)</option>
+                    </select>
                 </div>
             </div>
 
@@ -114,7 +122,7 @@
                             <th>Bulan</th>
                             <th>kWh</th>
                             <th>Transaksi</th>
-                        </tr>
+                            <th>Analisis Relokasi</th> </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
                 </table>
