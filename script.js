@@ -35,9 +35,7 @@ function processData(spklu, tx, kwh) {
     db.up3_list = [...uSet].sort(); db.kota_list = [...kSet].sort();
 }
 
-// Fungsi Baru: Marker Warna Dinamis untuk Analisis Relokasi
 function getRelocationIcon(totalTx) {
-    // Threshold: < 30 transaksi per bulan dianggap prioritas relokasi (Merah)
     const color = (totalTx < 30) ? 'red' : 'green';
     return L.icon({
         iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
@@ -60,12 +58,9 @@ function initApp() {
             const totKwh = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.kwh[bln]?.toString().replace(',','.')) || 0), 0);
             const totTx = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.tx[bln]?.toString().replace(',','.')) || 0), 0);
             
-            // Hitung rata-rata per bulan yang ada datanya
-            const avgTx = totTx / db.date_list.length;
-
             const m = L.marker([d.lat, d.lon], { icon: getRelocationIcon(totTx) }).addTo(map)
                 .bindPopup(`
-                    <div style="min-width:180px">
+                    <div style="min-width:200px">
                         <b style="color:#1e88e5;">${d.nama}</b><br><small>ID: ${d.ID_SPKLU}</small><hr>
                         <table style="width:100%; font-size:11px;">
                             <tr><td><b>Alamat</b></td><td>: ${d.Alamat || '-'}</td></tr>
@@ -74,16 +69,14 @@ function initApp() {
                             <tr><td>Tx Total</td><td>: ${totTx.toLocaleString('id-ID')}</td></tr>
                             <tr><td>Status</td><td>: ${totTx < 30 ? '<b style="color:red;">PRIORITAS RELOKASI</b>' : '<b style="color:green;">OPTIMAL</b>'}</td></tr>
                         </table>
-                        <a href="https://www.google.com/maps?q=${d.lat},${d.lon}" target="_blank" class="btn-rute">📍 Navigasi</a>
+                        <a href="https://www.google.com/maps?q=${d.lat},${d.lon}" target="_blank" class="btn-rute" style="display:block; text-align:center; background:#1e88e5; color:white; padding:5px; margin-top:10px; border-radius:4px; text-decoration:none;">📍 Navigasi</a>
                     </div>
                 `);
             m.data = d; markers.push(m);
         }
     });
 
-    // Populate Filters
     const mU = document.getElementById('mapFilterUP3'), mK = document.getElementById('mapFilterKota'), oU = document.getElementById('optUP3'), oK = document.getElementById('optKota');
-    mU.innerHTML = '<option value="all">Semua UP3</option>'; mK.innerHTML = '<option value="all">Semua Kota</option>';
     db.up3_list.forEach(u => { mU.add(new Option(u, u)); oU.appendChild(new Option("UP3 " + u, u)); });
     db.kota_list.forEach(k => { mK.add(new Option(k, k)); oK.appendChild(new Option(k, k)); });
 
@@ -91,11 +84,14 @@ function initApp() {
 }
 
 function setupEvents() {
-    ['searchNama', 'mapFilterUP3', 'mapFilterKota', 'mapFilterType'].forEach(id => document.getElementById(id).addEventListener('input', applyMapFilter));
-    ['evalFilterGeo', 'evalFilterCategory', 'evalFilterChartType', 'evalFilterYear'].forEach(id => document.getElementById(id).addEventListener('change', updateDashboard));
+    ['searchNama', 'mapFilterUP3', 'mapFilterKota', 'mapFilterType', 'mapFilterRelocation'].forEach(id => {
+        document.getElementById(id).addEventListener('input', applyMapFilter);
+    });
+    ['evalFilterGeo', 'evalFilterCategory', 'evalFilterChartType', 'evalFilterYear', 'evalFilterRelocation'].forEach(id => {
+        document.getElementById(id).addEventListener('change', updateDashboard);
+    });
     document.getElementById('prevBtn').onclick = () => { if(currentPage > 1) { currentPage--; renderTable(); } };
     document.getElementById('nextBtn').onclick = () => { if(currentPage * rowsPerPage < filteredTableData.length) { currentPage++; renderTable(); } };
-    document.getElementById('evalFilterRelocation').addEventListener('change', updateDashboard);
 }
 
 function updateYearFilter() {
@@ -107,22 +103,32 @@ function updateYearFilter() {
 }
 
 function applyMapFilter() {
-    const s = document.getElementById('searchNama').value.toLowerCase(), u = document.getElementById('mapFilterUP3').value, k = document.getElementById('mapFilterKota').value, t = document.getElementById('mapFilterType').value, list = document.getElementById('spkluList');
+    const s = document.getElementById('searchNama').value.toLowerCase(), 
+          u = document.getElementById('mapFilterUP3').value, 
+          k = document.getElementById('mapFilterKota').value, 
+          t = document.getElementById('mapFilterType').value,
+          r = document.getElementById('mapFilterRelocation').value,
+          list = document.getElementById('spkluList');
     list.innerHTML = '';
     
     let stats = { total: 0, relocation: 0, optimal: 0 };
 
     markers.forEach(m => {
-        const d = m.data, match = d.nama.toLowerCase().includes(s) && (u === 'all' || d.UP3 === u) && (k === 'all' || d.Kota === k) && (t === 'all' || d['TYPE CHARGE'] === t);
-        if(match) {
+        const d = m.data;
+        const totTx = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.tx[bln]?.toString().replace(',','.')) || 0), 0);
+        
+        const isPriority = totTx < 30;
+        const matchRelocation = (r === 'all') || (r === 'priority' && isPriority) || (r === 'optimal' && !isPriority);
+        const matchSearch = d.nama.toLowerCase().includes(s) && (u === 'all' || d.UP3 === u) && (k === 'all' || d.Kota === k) && (t === 'all' || d['TYPE CHARGE'] === t);
+
+        if(matchSearch && matchRelocation) {
             m.addTo(map);
             stats.total++;
-            const totTx = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.tx[bln]?.toString().replace(',','.')) || 0), 0);
-            if(totTx < 30) stats.relocation++; else stats.optimal++;
+            if(isPriority) stats.relocation++; else stats.optimal++;
 
             const div = document.createElement('div'); 
             div.className = 'list-item'; 
-            div.style.borderLeft = totTx < 30 ? '4px solid red' : '4px solid green';
+            div.style.borderLeft = isPriority ? '4px solid red' : '4px solid green';
             div.innerHTML = `<b>${d.nama}</b><small>${d.UP3} | ${totTx} Tx</small>`;
             div.onclick = () => { map.setView([d.lat, d.lon], 15); m.openPopup(); }; 
             list.appendChild(div);
@@ -146,27 +152,19 @@ function updateLegend(stats) {
 }
 
 function updateDashboard() {
-    // 1. Ambil semua nilai filter dari elemen HTML
     const geo = document.getElementById('evalFilterGeo').value;
     const cat = document.getElementById('evalFilterCategory').value;
     const type = document.getElementById('evalFilterChartType').value;
     const year = document.getElementById('evalFilterYear').value;
-    const relocationFilter = document.getElementById('evalFilterRelocation').value; // Filter baru
+    const relocationFilter = document.getElementById('evalFilterRelocation').value;
 
-    // 2. Filter daftar bulan berdasarkan tahun yang dipilih
     let dates = db.date_list;
     if (year !== 'all') dates = dates.filter(d => d.includes("-" + year.substring(2)));
     
-    // 3. Filter daftar stasiun berdasarkan Wilayah (UP3/Kota) DAN Status Relokasi
     const stations = db.spklu_data.filter(s => {
-        // Cek filter wilayah
         const matchGeo = (geo === 'all' || s.UP3 === geo || s.Kota === geo);
+        const totalTxStat = db.date_list.reduce((acc, bln) => acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
         
-        // Hitung total transaksi kumulatif stasiun tersebut untuk menentukan status relokasi
-        const totalTxStat = db.date_list.reduce((acc, bln) => 
-            acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
-        
-        // Cek filter status relokasi (Prioritas < 30 Tx, Optimal >= 30 Tx)
         let matchRelocation = true;
         if (relocationFilter === 'priority') matchRelocation = (totalTxStat < 30);
         if (relocationFilter === 'optimal') matchRelocation = (totalTxStat >= 30);
@@ -174,46 +172,37 @@ function updateDashboard() {
         return matchGeo && matchRelocation;
     });
 
-    // 4. Validasi bulan yang memiliki data (agar grafik tidak kosong di awal/akhir)
-    dates = dates.filter(d => stations.reduce((acc, s) => 
-        acc + (parseFloat(s[cat][d]?.toString().replace(',', '.')) || 0), 0) > 0);
+    dates = dates.filter(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',', '.')) || 0), 0) > 0);
 
-    // 5. Hitung nilai untuk Grafik dan Summary Cards
-    const vals = dates.map(d => stations.reduce((acc, s) => 
-        acc + (parseFloat(s[cat][d]?.toString().replace(',', '.')) || 0), 0));
-    
-    const totalKwh = dates.map(d => stations.reduce((acc, s) => 
-        acc + (parseFloat(s['kwh'][d]?.toString().replace(',', '.')) || 0), 0)).reduce((a, b) => a + b, 0);
+    const vals = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',', '.')) || 0), 0));
+    const totalKwh = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s['kwh'][d]?.toString().replace(',', '.')) || 0), 0)).reduce((a, b) => a + b, 0);
 
-    // 6. Update tampilan angka di Card Summary
     document.getElementById('totalValue').innerText = vals.reduce((a, b) => a + b, 0).toLocaleString('id-ID') + (cat === 'kwh' ? ' kWh' : ' Tx');
     document.getElementById('totalRupiah').innerText = "Rp " + (totalKwh * TARIF_KWH).toLocaleString('id-ID');
     document.getElementById('totalSPKLU').innerText = stations.length;
 
-    // 7. Render ulang grafik
     renderChart(type, dates, vals, cat.toUpperCase());
 
-    // 8. Update data untuk tabel rincian
     filteredTableData = [];
     stations.forEach(s => dates.forEach(d => { 
         const v = parseFloat(s[cat][d]?.toString().replace(',', '.'));
         if (v > 0) {
+            const txVal = parseFloat(s.tx[d]?.toString().replace(',','.')) || 0;
             filteredTableData.push({ 
-                n: s.nama, 
-                id: s.ID_SPKLU, 
-                u: s.UP3, 
-                b: d, 
-                k: s.kwh[d] || 0, 
-                t: s.tx[d] || 0 
+                n: s.nama, id: s.ID_SPKLU, u: s.UP3, b: d, k: s.kwh[d] || 0, t: txVal,
+                // Logika Analisis Kolom Baru
+                analysis: txVal < 1 ? '<span style="color:red; font-weight:bold;">Prioritas Relokasi</span>' : '<span style="color:green;">Optimal</span>'
             }); 
         }
     }));
 
-    // Urutkan tabel berdasarkan bulan terbaru dan reset halaman ke 1
     filteredTableData.sort((a, b) => b.b.localeCompare(a.b));
     currentPage = 1; 
     renderTable();
 }
+
+
+
 function renderChart(type, labels, data, label) {
     if (currentChart) currentChart.destroy();
     const isLine = type === 'line';
@@ -231,7 +220,15 @@ function renderChart(type, labels, data, label) {
 function renderTable() {
     const start = (currentPage - 1) * rowsPerPage;
     const pageData = filteredTableData.slice(start, start + rowsPerPage);
-    document.getElementById('tableBody').innerHTML = pageData.map(r => `<tr><td>${r.n}</td><td>${r.u}</td><td>${r.b}</td><td>${r.k}</td><td>${r.t}</td></tr>`).join('');
+    document.getElementById('tableBody').innerHTML = pageData.map(r => `
+        <tr>
+            <td>${r.n}</td>
+            <td>${r.u}</td>
+            <td>${r.b}</td>
+            <td>${r.k}</td>
+            <td>${r.t}</td>
+            <td>${r.analysis}</td>
+        </tr>`).join('');
     document.getElementById('pageInfo').innerText = `Hal ${currentPage} dari ${Math.ceil(filteredTableData.length/rowsPerPage) || 1}`;
 }
 
