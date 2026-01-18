@@ -68,6 +68,7 @@ function initApp() {
                     <div style="min-width:180px">
                         <b style="color:#1e88e5;">${d.nama}</b><br><small>ID: ${d.ID_SPKLU}</small><hr>
                         <table style="width:100%; font-size:11px;">
+                            <tr><td><b>Alamat</b></td><td>: ${d.Alamat || '-'}</td></tr>
                             <tr><td>Tipe</td><td>: ${d['TYPE CHARGE']}</td></tr>
                             <tr><td>Kwh Total</td><td>: ${totKwh.toLocaleString('id-ID')}</td></tr>
                             <tr><td>Tx Total</td><td>: ${totTx.toLocaleString('id-ID')}</td></tr>
