@@ -19,6 +19,13 @@
     <div id="map-container">
         <div class="panel">
             <h3>Pencarian & Filter</h3>
+            
+            <div style="background: #fff8e1; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 11px; border: 1px solid #ffe082;">
+                <strong>Analisis Relokasi:</strong><br>
+                <span style="color: #d32f2f;">● Prioritas ( < 30 Tx/Bulan )</span><br>
+                <span style="color: #388e3c;">● Optimal ( ≥ 30 Tx/Bulan )</span>
+            </div>
+
             <label>Nama SPKLU</label>
             <input type="text" id="searchNama" placeholder="Ketik nama stasiun...">
             
@@ -75,7 +82,7 @@
                     <label>Parameter Data</label>
                     <select id="evalFilterCategory">
                         <option value="kwh">Konsumsi Energi (kWh)</option>
-                        <option value="transactions">Jumlah Transaksi</option>
+                        <option value="tx">Jumlah Transaksi</option>
                     </select>
                 </div>
                 <div class="filter-item">
