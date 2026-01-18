@@ -95,6 +95,7 @@ function setupEvents() {
     ['evalFilterGeo', 'evalFilterCategory', 'evalFilterChartType', 'evalFilterYear'].forEach(id => document.getElementById(id).addEventListener('change', updateDashboard));
     document.getElementById('prevBtn').onclick = () => { if(currentPage > 1) { currentPage--; renderTable(); } };
     document.getElementById('nextBtn').onclick = () => { if(currentPage * rowsPerPage < filteredTableData.length) { currentPage++; renderTable(); } };
+    document.getElementById('evalFilterRelocation').addEventListener('change', updateDashboard);
 }
 
 function updateYearFilter() {
@@ -145,29 +146,74 @@ function updateLegend(stats) {
 }
 
 function updateDashboard() {
-    const geo = document.getElementById('evalFilterGeo').value, cat = document.getElementById('evalFilterCategory').value, type = document.getElementById('evalFilterChartType').value, year = document.getElementById('evalFilterYear').value;
+    // 1. Ambil semua nilai filter dari elemen HTML
+    const geo = document.getElementById('evalFilterGeo').value;
+    const cat = document.getElementById('evalFilterCategory').value;
+    const type = document.getElementById('evalFilterChartType').value;
+    const year = document.getElementById('evalFilterYear').value;
+    const relocationFilter = document.getElementById('evalFilterRelocation').value; // Filter baru
+
+    // 2. Filter daftar bulan berdasarkan tahun yang dipilih
     let dates = db.date_list;
     if (year !== 'all') dates = dates.filter(d => d.includes("-" + year.substring(2)));
-    dates = dates.filter(d => db.spklu_data.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',','.')) || 0), 0) > 0);
+    
+    // 3. Filter daftar stasiun berdasarkan Wilayah (UP3/Kota) DAN Status Relokasi
+    const stations = db.spklu_data.filter(s => {
+        // Cek filter wilayah
+        const matchGeo = (geo === 'all' || s.UP3 === geo || s.Kota === geo);
+        
+        // Hitung total transaksi kumulatif stasiun tersebut untuk menentukan status relokasi
+        const totalTxStat = db.date_list.reduce((acc, bln) => 
+            acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
+        
+        // Cek filter status relokasi (Prioritas < 30 Tx, Optimal >= 30 Tx)
+        let matchRelocation = true;
+        if (relocationFilter === 'priority') matchRelocation = (totalTxStat < 30);
+        if (relocationFilter === 'optimal') matchRelocation = (totalTxStat >= 30);
 
-    const stations = db.spklu_data.filter(s => geo === 'all' || s.UP3 === geo || s.Kota === geo);
-    const vals = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',','.')) || 0), 0));
-    const totalKwh = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s['kwh'][d]?.toString().replace(',','.')) || 0), 0)).reduce((a,b)=>a+b, 0);
+        return matchGeo && matchRelocation;
+    });
 
-    document.getElementById('totalValue').innerText = vals.reduce((a,b)=>a+b, 0).toLocaleString('id-ID') + (cat==='kwh'?' kWh':' Tx');
+    // 4. Validasi bulan yang memiliki data (agar grafik tidak kosong di awal/akhir)
+    dates = dates.filter(d => stations.reduce((acc, s) => 
+        acc + (parseFloat(s[cat][d]?.toString().replace(',', '.')) || 0), 0) > 0);
+
+    // 5. Hitung nilai untuk Grafik dan Summary Cards
+    const vals = dates.map(d => stations.reduce((acc, s) => 
+        acc + (parseFloat(s[cat][d]?.toString().replace(',', '.')) || 0), 0));
+    
+    const totalKwh = dates.map(d => stations.reduce((acc, s) => 
+        acc + (parseFloat(s['kwh'][d]?.toString().replace(',', '.')) || 0), 0)).reduce((a, b) => a + b, 0);
+
+    // 6. Update tampilan angka di Card Summary
+    document.getElementById('totalValue').innerText = vals.reduce((a, b) => a + b, 0).toLocaleString('id-ID') + (cat === 'kwh' ? ' kWh' : ' Tx');
     document.getElementById('totalRupiah').innerText = "Rp " + (totalKwh * TARIF_KWH).toLocaleString('id-ID');
     document.getElementById('totalSPKLU').innerText = stations.length;
 
+    // 7. Render ulang grafik
     renderChart(type, dates, vals, cat.toUpperCase());
+
+    // 8. Update data untuk tabel rincian
     filteredTableData = [];
     stations.forEach(s => dates.forEach(d => { 
-        const v = parseFloat(s[cat][d]?.toString().replace(',','.'));
-        if(v > 0) filteredTableData.push({ n: s.nama, id: s.ID_SPKLU, u: s.UP3, b: d, k: s.kwh[d]||0, t: s.tx[d]||0 }); 
+        const v = parseFloat(s[cat][d]?.toString().replace(',', '.'));
+        if (v > 0) {
+            filteredTableData.push({ 
+                n: s.nama, 
+                id: s.ID_SPKLU, 
+                u: s.UP3, 
+                b: d, 
+                k: s.kwh[d] || 0, 
+                t: s.tx[d] || 0 
+            }); 
+        }
     }));
-    filteredTableData.sort((a,b) => b.b.localeCompare(a.b));
-    currentPage = 1; renderTable();
-}
 
+    // Urutkan tabel berdasarkan bulan terbaru dan reset halaman ke 1
+    filteredTableData.sort((a, b) => b.b.localeCompare(a.b));
+    currentPage = 1; 
+    renderTable();
+}
 function renderChart(type, labels, data, label) {
     if (currentChart) currentChart.destroy();
     const isLine = type === 'line';
