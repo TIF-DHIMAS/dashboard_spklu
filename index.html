@@ -92,6 +92,14 @@
                         <option value="bar">Bar Chart</option>
                     </select>
                 </div>
+                <div class="filter-item">
+                <label>Analisis Relokasi</label>
+                <select id="evalFilterRelocation">
+                <option value="all">Semua Status</option>
+                <option value="priority" style="color: #d32f2f;">● Prioritas (< 30 Tx/Bulan)</option>
+                <option value="optimal" style="color: #388e3c;">● Optimal (≥ 30 Tx/Bulan)</option>
+                </select>
+                </div>
             </div>
 
             <div class="chart-box"><canvas id="mainChart"></canvas></div>
