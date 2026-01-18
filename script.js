@@ -77,6 +77,7 @@ function initApp() {
     });
 
     const mU = document.getElementById('mapFilterUP3'), mK = document.getElementById('mapFilterKota'), oU = document.getElementById('optUP3'), oK = document.getElementById('optKota');
+    mU.innerHTML = '<option value="all">Semua UP3</option>'; mK.innerHTML = '<option value="all">Semua Kota</option>';
     db.up3_list.forEach(u => { mU.add(new Option(u, u)); oU.appendChild(new Option("UP3 " + u, u)); });
     db.kota_list.forEach(k => { mK.add(new Option(k, k)); oK.appendChild(new Option(k, k)); });
 
@@ -109,8 +110,8 @@ function applyMapFilter() {
           t = document.getElementById('mapFilterType').value,
           r = document.getElementById('mapFilterRelocation').value,
           list = document.getElementById('spkluList');
-    list.innerHTML = '';
     
+    list.innerHTML = '';
     let stats = { total: 0, relocation: 0, optimal: 0 };
 
     markers.forEach(m => {
@@ -184,35 +185,29 @@ function updateDashboard() {
     renderChart(type, dates, vals, cat.toUpperCase());
 
     filteredTableData = [];
-    // Cuplikan perbaikan logika di script.js
-stations.forEach(s => {
-    // Hitung TOTAL transaksi kumulatif stasiun ini terlebih dahulu
-    const totalTxStat = db.date_list.reduce((acc, bln) => 
-        acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
-       // Tentukan status berdasarkan standar yang sama dengan peta (< 30)
-    const statusRelokasi = totalTxStat < 30 ? 
-        '<span style="color:red; font-weight:bold;">Prioritas Relokasi</span>' : 
-        '<span style="color:green;">Optimal</span>';
-    dates.forEach(d => {
-        if ((parseFloat(s.kwh[d]) || 0) > 0) {
-            filteredTableData.push({
-                n: s.nama,
-                id: s.ID_SPKLU,
-                u: s.UP3,
-                b: d,
-                k: s.kwh[d] || 0,
-                t: s.tx[d] || 0,
-                analysis: statusRelokasi // Gunakan status kumulatif di sini
-            });
-        }
+    stations.forEach(s => {
+        // Tentukan status kumulatif stasiun untuk kolom analisis tabel
+        const totalTxStat = db.date_list.reduce((acc, bln) => 
+            acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
+        const statusRelokasi = totalTxStat < 30 ? 
+            '<span style="color:red; font-weight:bold;">Prioritas Relokasi</span>' : 
+            '<span style="color:green;">Optimal</span>';
+
+        dates.forEach(d => { 
+            const v = parseFloat(s[cat][d]?.toString().replace(',', '.'));
+            if (v > 0) {
+                filteredTableData.push({ 
+                    n: s.nama, id: s.ID_SPKLU, u: s.UP3, b: d, k: s.kwh[d] || 0, t: s.tx[d] || 0,
+                    analysis: statusRelokasi // Sekarang sinkron dengan performa kumulatif
+                }); 
+            }
+        });
     });
-});
+
     filteredTableData.sort((a, b) => b.b.localeCompare(a.b));
     currentPage = 1; 
     renderTable();
 }
-
-
 
 function renderChart(type, labels, data, label) {
     if (currentChart) currentChart.destroy();
@@ -233,7 +228,7 @@ function renderTable() {
     const pageData = filteredTableData.slice(start, start + rowsPerPage);
     document.getElementById('tableBody').innerHTML = pageData.map(r => `
         <tr>
-            <td>${r.n}</td>
+            <td>${r.n} (${r.id})</td>
             <td>${r.u}</td>
             <td>${r.b}</td>
             <td>${r.k}</td>
