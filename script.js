@@ -184,18 +184,29 @@ function updateDashboard() {
     renderChart(type, dates, vals, cat.toUpperCase());
 
     filteredTableData = [];
-    stations.forEach(s => dates.forEach(d => { 
-        const v = parseFloat(s[cat][d]?.toString().replace(',', '.'));
-        if (v > 0) {
-            const txVal = parseFloat(s.tx[d]?.toString().replace(',','.')) || 0;
-            filteredTableData.push({ 
-                n: s.nama, id: s.ID_SPKLU, u: s.UP3, b: d, k: s.kwh[d] || 0, t: txVal,
-                // Logika Analisis Kolom Baru
-                analysis: txVal < 1 ? '<span style="color:red; font-weight:bold;">Prioritas Relokasi</span>' : '<span style="color:green;">Optimal</span>'
-            }); 
+    // Cuplikan perbaikan logika di script.js
+stations.forEach(s => {
+    // Hitung TOTAL transaksi kumulatif stasiun ini terlebih dahulu
+    const totalTxStat = db.date_list.reduce((acc, bln) => 
+        acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
+       // Tentukan status berdasarkan standar yang sama dengan peta (< 30)
+    const statusRelokasi = totalTxStat < 30 ? 
+        '<span style="color:red; font-weight:bold;">Prioritas Relokasi</span>' : 
+        '<span style="color:green;">Optimal</span>';
+    dates.forEach(d => {
+        if ((parseFloat(s.kwh[d]) || 0) > 0) {
+            filteredTableData.push({
+                n: s.nama,
+                id: s.ID_SPKLU,
+                u: s.UP3,
+                b: d,
+                k: s.kwh[d] || 0,
+                t: s.tx[d] || 0,
+                analysis: statusRelokasi // Gunakan status kumulatif di sini
+            });
         }
-    }));
-
+    });
+});
     filteredTableData.sort((a, b) => b.b.localeCompare(a.b));
     currentPage = 1; 
     renderTable();
