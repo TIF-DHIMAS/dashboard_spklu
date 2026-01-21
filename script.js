@@ -65,9 +65,11 @@ function initApp() {
                         <table style="width:100%; font-size:11px;">
                             <tr><td><b>Alamat</b></td><td>: ${d.Alamat || '-'}</td></tr>
                             <tr><td>Tipe</td><td>: ${d['TYPE CHARGE']}</td></tr>
+                            <tr><td>Tipe</td><td>: ${d['MERK']}</td></tr>
+                            <tr><td>Tipe</td><td>: ${d['UMUR']}</td></tr>
                             <tr><td>Kwh Total</td><td>: ${totKwh.toLocaleString('id-ID')}</td></tr>
                             <tr><td>Tx Total</td><td>: ${totTx.toLocaleString('id-ID')}</td></tr>
-                            <tr><td>Status</td><td>: ${totTx < 30 ? '<b style="color:red;">PRIORITAS RELOKASI</b>' : '<b style="color:green;">OPTIMAL</b>'}</td></tr>
+                            <tr><td>Status</td><td>: ${totTx < 96 ? '<b style="color:red;">PRIORITAS RELOKASI</b>' : '<b style="color:green;">OPTIMAL</b>'}</td></tr>
                         </table>
                         <a href="https://www.google.com/maps?q=${d.lat},${d.lon}" target="_blank" class="btn-rute" style="display:block; text-align:center; background:#1e88e5; color:white; padding:5px; margin-top:10px; border-radius:4px; text-decoration:none;">📍 Navigasi</a>
                     </div>
