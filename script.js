@@ -167,8 +167,8 @@ function updateDashboard() {
         const totalTxStat = db.date_list.reduce((acc, bln) => acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
         
         let matchRelocation = true;
-        if (relocationFilter === 'priority') matchRelocation = (totalTxStat < 30);
-        if (relocationFilter === 'optimal') matchRelocation = (totalTxStat >= 30);
+        if (relocationFilter === 'priority') matchRelocation = (totalTxStat < 96);
+        if (relocationFilter === 'optimal') matchRelocation = (totalTxStat >= 96);
 
         return matchGeo && matchRelocation;
     });
