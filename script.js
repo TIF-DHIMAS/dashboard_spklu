@@ -65,8 +65,8 @@ function initApp() {
                         <table style="width:100%; font-size:11px;">
                             <tr><td><b>Alamat</b></td><td>: ${d.Alamat || '-'}</td></tr>
                             <tr><td>Tipe</td><td>: ${d['TYPE CHARGE']}</td></tr>
-                            <tr><td>Tipe</td><td>: ${d['MERK']}</td></tr>
-                            <tr><td>Tipe</td><td>: ${d['UMUR']}</td></tr>
+                            <tr><td>Merk</td><td>: ${d['MERK']}</td></tr>
+                            <tr><td>Usia SPKLU</td><td>: ${d['UMUR']} Tahun</td></tr>
                             <tr><td>Kwh Total</td><td>: ${totKwh.toLocaleString('id-ID')}</td></tr>
                             <tr><td>Tx Total</td><td>: ${totTx.toLocaleString('id-ID')}</td></tr>
                             <tr><td>Status</td><td>: ${totTx < 96 ? '<b style="color:red;">PRIORITAS RELOKASI</b>' : '<b style="color:green;">OPTIMAL</b>'}</td></tr>
