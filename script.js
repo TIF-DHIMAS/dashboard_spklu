@@ -36,7 +36,7 @@ function processData(spklu, tx, kwh) {
 }
 
 function getRelocationIcon(totalTx) {
-    const color = (totalTx < 30) ? 'red' : 'green';
+    const color = (totalTx < 96) ? 'red' : 'green';
     return L.icon({
         iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -120,7 +120,7 @@ function applyMapFilter() {
         const d = m.data;
         const totTx = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.tx[bln]?.toString().replace(',','.')) || 0), 0);
         
-        const isPriority = totTx < 30;
+        const isPriority = totTx < 96;
         const matchRelocation = (r === 'all') || (r === 'priority' && isPriority) || (r === 'optimal' && !isPriority);
         const matchSearch = d.nama.toLowerCase().includes(s) && (u === 'all' || d.UP3 === u) && (k === 'all' || d.Kota === k) && (t === 'all' || d['TYPE CHARGE'] === t);
 
@@ -191,7 +191,7 @@ function updateDashboard() {
         // Tentukan status kumulatif stasiun untuk kolom analisis tabel
         const totalTxStat = db.date_list.reduce((acc, bln) => 
             acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
-        const statusRelokasi = totalTxStat < 30 ? 
+        const statusRelokasi = totalTxStat < 96 ? 
             '<span style="color:red; font-weight:bold;">Prioritas Relokasi</span>' : 
             '<span style="color:green;">Optimal</span>';
 
