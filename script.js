@@ -36,7 +36,7 @@ function processData(spklu, tx, kwh) {
 }
 
 function getRelocationIcon(totalTx) {
-    const color = (totalTx < 48) ? 'red' : 'green';
+    const color = (totalTx < 30) ? 'red' : 'green';
     return L.icon({
         iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -69,7 +69,7 @@ function initApp() {
                             <tr><td>Usia SPKLU</td><td>: ${d['UMUR']} Tahun</td></tr>
                             <tr><td>Kwh Total</td><td>: ${totKwh.toLocaleString('id-ID')}</td></tr>
                             <tr><td>Tx Total</td><td>: ${totTx.toLocaleString('id-ID')}</td></tr>
-                            <tr><td>Status</td><td>: ${totTx < 48 ? '<b style="color:red;">PRIORITAS RELOKASI</b>' : '<b style="color:green;">OPTIMAL</b>'}</td></tr>
+                            <tr><td>Status</td><td>: ${totTx < 30 ? '<b style="color:red;">PRIORITAS RELOKASI</b>' : '<b style="color:green;">OPTIMAL</b>'}</td></tr>
                         </table>
                         <a href="https://www.google.com/maps?q=${d.lat},${d.lon}" target="_blank" class="btn-rute" style="display:block; text-align:center; background:#1e88e5; color:white; padding:5px; margin-top:10px; border-radius:4px; text-decoration:none;">📍 Navigasi</a>
                     </div>
@@ -120,7 +120,7 @@ function applyMapFilter() {
         const d = m.data;
         const totTx = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.tx[bln]?.toString().replace(',','.')) || 0), 0);
         
-        const isPriority = totTx < 48;
+        const isPriority = totTx < 30;
         const matchRelocation = (r === 'all') || (r === 'priority' && isPriority) || (r === 'optimal' && !isPriority);
         const matchSearch = d.nama.toLowerCase().includes(s) && (u === 'all' || d.UP3 === u) && (k === 'all' || d.Kota === k) && (t === 'all' || d['TYPE CHARGE'] === t);
 
@@ -169,8 +169,8 @@ function updateDashboard() {
         const totalTxStat = db.date_list.reduce((acc, bln) => acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
         
         let matchRelocation = true;
-        if (relocationFilter === 'priority') matchRelocation = (totalTxStat < 48);
-        if (relocationFilter === 'optimal') matchRelocation = (totalTxStat >= 48);
+        if (relocationFilter === 'priority') matchRelocation = (totalTxStat < 30);
+        if (relocationFilter === 'optimal') matchRelocation = (totalTxStat >= 30);
 
         return matchGeo && matchRelocation;
     });
@@ -191,7 +191,7 @@ function updateDashboard() {
         // Tentukan status kumulatif stasiun untuk kolom analisis tabel
         const totalTxStat = db.date_list.reduce((acc, bln) => 
             acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
-        const statusRelokasi = totalTxStat < 48 ? 
+        const statusRelokasi = totalTxStat < 30 ? 
             '<span style="color:red; font-weight:bold;">Prioritas Relokasi</span>' : 
             '<span style="color:green;">Optimal</span>';
 
