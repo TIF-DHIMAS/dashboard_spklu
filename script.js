@@ -225,11 +225,11 @@ function updateLegend(stats) {
             
             <div class="legend-pane">
                 <b>Populasi KBLBB</b><hr>
-                <div class="legend-item"><i style="background: #006400"></i> > 80 Unit KBLBB</div>
-                <div class="legend-item"><i style="background: #228B22"></i> 41 - 80 Unit KBLBB</div>
-                <div class="legend-item"><i style="background: #FFA500"></i> 26 - 40 Unit KBLBB</div>
-                <div class="legend-item"><i style="background: #FF4500"></i> 6 - 25 Unit KBLBB</div>
-                <div class="legend-item"><i style="background: #8B0000"></i> 0 - 5 Unit KBLBB</div>
+                <div class="legend-item"><i style="background: #006400"></i> > 80 Unit</div>
+                <div class="legend-item"><i style="background: #228B22"></i> 41 - 80 Unit</div>
+                <div class="legend-item"><i style="background: #FFA500"></i> 26 - 40 Unit</div>
+                <div class="legend-item"><i style="background: #FF4500"></i> 6 - 25 Unit</div>
+                <div class="legend-item"><i style="background: #8B0000"></i> 0 - 5 Unit</div>
             </div>
         `;
         return div;
