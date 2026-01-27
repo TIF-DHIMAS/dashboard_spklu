@@ -21,8 +21,53 @@ body { margin:0; font-family: 'Segoe UI', sans-serif; background: #f4f7f6; overf
 .list-item b { display: block; color: #1e88e5; }
 
 /* Legend */
-.legend { background: rgba(255,255,255,0.9); padding: 12px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.2); font-size: 11px; line-height: 20px; }
-.legend img { width: 16px; vertical-align: middle; margin-right: 8px; }
+/* Container Utama Legend dengan Background Transparan */
+.legend-container {
+    display: flex;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.85); /* Putih transparan */
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    backdrop-filter: blur(5px); /* Efek blur kaca di belakang legend */
+    border: 1px solid rgba(0,0,0,0.1);
+    font-size: 11px;
+    color: #333;
+}
+
+/* Panel Individual */
+.legend-pane {
+    min-width: 110px;
+}
+
+.legend-pane b {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: #1e88e5;
+}
+
+.legend-pane hr {
+    margin: 4px 0;
+    border: 0;
+    border-top: 1px solid #ddd;
+}
+
+/* Item Baris & Kotak Warna */
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 3px;
+    font-weight: 500;
+}
+
+.legend-item i {
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+    display: inline-block;
+    border: 0.5px solid #666; /* Border tipis agar warna terang tetap terlihat */
+}
 
 /* Dashboard Cards */
 #evaluation-layer { padding: 40px 20px; background: #fff; }
