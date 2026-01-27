@@ -1,20 +1,57 @@
 const URL_SPKLU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1832472677&single=true&output=csv';
 const URL_TX = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=380492498&single=true&output=csv';
 const URL_KWH = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1097239958&single=true&output=csv';
+const URL_KBLBB = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1309571461&single=true&output=csv'
 
 const TARIF_KWH = 2467; 
 
 let map, markers = [], currentChart = null, legendControl = null;
 let db = { spklu_data: [], up3_list: [], kota_list: [], date_list: [] };
+let dataStatistik = {}; // Untuk menyimpan data JML_KBLBB per Kabupaten/Kota
 let filteredTableData = [], currentPage = 1, rowsPerPage = 10;
 
+// 2. FUNGSI PEMBANTU (UTILITY)
+function getColor(d) {
+    return d > 80  ? '#800026' :
+           d > 40  ? '#BD0026' :
+           d > 25  ? '#E31A1C' :
+           d > 5   ? '#FC4E2A' :
+                     '#FFEDA0';
+}
+
+function cleanName(name) {
+    if (!name) return "";
+    return name.toUpperCase()
+               .replace(/KOTA|KABUPATEN|KAB\./g, "")
+               .trim();
+}
+
+// 3. PENGAMBILAN DATA (FETCHING)
 async function fetchData() {
     const fetchCsv = (url) => new Promise((res, rej) => Papa.parse(url, { download: true, header: true, skipEmptyLines: 'greedy', complete: (r) => res(r.data), error: rej }));
     try {
-        const [s, t, k] = await Promise.all([fetchCsv(URL_SPKLU), fetchCsv(URL_TX), fetchCsv(URL_KWH)]);
+        const [s, t, k, kblbb] = await Promise.all([
+            fetchCsv(URL_SPKLU), 
+            fetchCsv(URL_TX), 
+            fetchCsv(URL_KWH),
+            fetchCsv(URL_KBLBB)
+        ]);
+
+        // Mengambil GeoJSON dari sumber eksternal
+        const geoRes = await fetch('https://raw.githubusercontent.com/rifani/geojson-political-indonesia/master/IDN_adm_2_kabkota.json');
+        const geojsonData = await geoRes.json();
+
+        // Proses data statistik KBLBB ke dalam objek global
+        kblbb.forEach(row => {
+            if(row["KOTA"]) {
+                const key = cleanName(row["KOTA"]);
+                dataStatistik[key] = parseInt(row["JML_KBLBB"]) || 0;
+            }
+        });
+
         processData(s, t, k);
         updateYearFilter();
-        initApp();
+        initApp(geojsonData);
     } catch (e) { console.error("Data Load Error:", e); }
 }
 
@@ -47,12 +84,17 @@ function getRelocationIcon(totalTx) {
     });
 }
 
-function initApp() {
+// 4. INISIALISASI APLIKASI DAN PETA
+function initApp(geojsonData) {
     if (map) map.remove();
     map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+    // Render Choropleth Wilayah Terlebih Dahulu (Lapisan Bawah)
+    renderGeoJson(geojsonData);
+
+    // Render Marker SPKLU (Lapisan Atas)
     db.spklu_data.forEach(d => {
         if (!isNaN(d.lat)) {
             const totKwh = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.kwh[bln]?.toString().replace(',','.')) || 0), 0);
@@ -64,20 +106,20 @@ function initApp() {
                         <b style="color:#1e88e5;">${d.nama}</b><br><small>ID: ${d.ID_SPKLU}</small><hr>
                         <table style="width:100%; font-size:11px;">
                             <tr><td><b>Alamat</b></td><td>: ${d.Alamat || '-'}</td></tr>
-                            <tr><td>Tipe/Kapasitas Daya</td><td>: ${d['TYPE CHARGE']} / ${d['KW']} KW</td></tr>
+                            <tr><td>Tipe/Daya</td><td>: ${d['TYPE CHARGE']} / ${d['KW']} KW</td></tr>
                             <tr><td>Merk</td><td>: ${d['MERK']}</td></tr>
-                            <tr><td>Usia SPKLU</td><td>: ${d['UMUR']} Tahun</td></tr>
                             <tr><td>Kwh Total</td><td>: ${totKwh.toLocaleString('id-ID')}</td></tr>
                             <tr><td>Tx Total</td><td>: ${totTx.toLocaleString('id-ID')}</td></tr>
                             <tr><td>Status</td><td>: ${totTx < 30 ? '<b style="color:red;">PRIORITAS RELOKASI</b>' : '<b style="color:green;">OPTIMAL</b>'}</td></tr>
                         </table>
-                        <a href="https://www.google.com/maps?q=${d.lat},${d.lon}" target="_blank" class="btn-rute" style="display:block; text-align:center; background:#1e88e5; color:white; padding:5px; margin-top:10px; border-radius:4px; text-decoration:none;">📍 Navigasi</a>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}" target="_blank" class="btn-rute" style="display:block; text-align:center; background:#1e88e5; color:white; padding:5px; margin-top:10px; border-radius:4px; text-decoration:none;">📍 Navigasi</a>
                     </div>
                 `);
             m.data = d; markers.push(m);
         }
     });
 
+    // Setup UI Filters
     const mU = document.getElementById('mapFilterUP3'), mK = document.getElementById('mapFilterKota'), oU = document.getElementById('optUP3'), oK = document.getElementById('optKota');
     mU.innerHTML = '<option value="all">Semua UP3</option>'; mK.innerHTML = '<option value="all">Semua Kota</option>';
     db.up3_list.forEach(u => { mU.add(new Option(u, u)); oU.appendChild(new Option("UP3 " + u, u)); });
@@ -86,6 +128,32 @@ function initApp() {
     setupEvents(); updateDashboard(); applyMapFilter();
 }
 
+// 5. RENDER GEODATA (CHOROPLETH)
+function renderGeoJson(geojsonData) {
+    const kalbarShapes = geojsonData.features.filter(f => 
+        f.properties.NAME_1 === "Kalimantan Barat"
+    );
+
+    L.geoJson(kalbarShapes, {
+        style: function(feature) {
+            const namaGeo = cleanName(feature.properties.NAME_2);
+            const nilai = dataStatistik[namaGeo] || 0;
+            return { 
+                fillColor: getColor(nilai), 
+                weight: 1.5, 
+                color: 'white', 
+                fillOpacity: 0.6 
+            };
+        },
+        onEachFeature: function(feature, layer) {
+            const nama = feature.properties.NAME_2;
+            const jml = dataStatistik[cleanName(nama)] || 0;
+            layer.bindPopup(`<b>Wilayah: ${nama}</b><br>Populasi Kendaraan (KBLBB): ${jml} Unit`);
+        }
+    }).addTo(map);
+}
+
+// 6. LOGIKA DASHBOARD DAN FILTER
 function setupEvents() {
     ['searchNama', 'mapFilterUP3', 'mapFilterKota', 'mapFilterType', 'mapFilterRelocation'].forEach(id => {
         document.getElementById(id).addEventListener('input', applyMapFilter);
@@ -167,16 +235,13 @@ function updateDashboard() {
     const stations = db.spklu_data.filter(s => {
         const matchGeo = (geo === 'all' || s.UP3 === geo || s.Kota === geo);
         const totalTxStat = db.date_list.reduce((acc, bln) => acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
-        
         let matchRelocation = true;
         if (relocationFilter === 'priority') matchRelocation = (totalTxStat < 30);
         if (relocationFilter === 'optimal') matchRelocation = (totalTxStat >= 30);
-
         return matchGeo && matchRelocation;
     });
 
     dates = dates.filter(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',', '.')) || 0), 0) > 0);
-
     const vals = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',', '.')) || 0), 0));
     const totalKwh = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s['kwh'][d]?.toString().replace(',', '.')) || 0), 0)).reduce((a, b) => a + b, 0);
 
@@ -188,27 +253,22 @@ function updateDashboard() {
 
     filteredTableData = [];
     stations.forEach(s => {
-        // Tentukan status kumulatif stasiun untuk kolom analisis tabel
-        const totalTxStat = db.date_list.reduce((acc, bln) => 
-            acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
-        const statusRelokasi = totalTxStat < 30 ? 
-            '<span style="color:red; font-weight:bold;">Prioritas Relokasi</span>' : 
-            '<span style="color:green;">Optimal</span>';
+        const totalTxStat = db.date_list.reduce((acc, bln) => acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
+        const statusRelokasi = totalTxStat < 30 ? '<span style="color:red; font-weight:bold;">Prioritas Relokasi</span>' : '<span style="color:green;">Optimal</span>';
 
         dates.forEach(d => { 
             const v = parseFloat(s[cat][d]?.toString().replace(',', '.'));
             if (v > 0) {
                 filteredTableData.push({ 
                     n: s.nama, id: s.ID_SPKLU, u: s.UP3, b: d, k: s.kwh[d] || 0, t: s.tx[d] || 0,
-                    analysis: statusRelokasi // Sekarang sinkron dengan performa kumulatif
+                    analysis: statusRelokasi
                 }); 
             }
         });
     });
 
     filteredTableData.sort((a, b) => b.b.localeCompare(a.b));
-    currentPage = 1; 
-    renderTable();
+    currentPage = 1; renderTable();
 }
 
 function renderChart(type, labels, data, label) {
@@ -230,14 +290,10 @@ function renderTable() {
     const pageData = filteredTableData.slice(start, start + rowsPerPage);
     document.getElementById('tableBody').innerHTML = pageData.map(r => `
         <tr>
-            <td>${r.n} (${r.id})</td>
-            <td>${r.u}</td>
-            <td>${r.b}</td>
-            <td>${r.k}</td>
-            <td>${r.t}</td>
-            <td>${r.analysis}</td>
+            <td>${r.n} (${r.id})</td><td>${r.u}</td><td>${r.b}</td><td>${r.k}</td><td>${r.t}</td><td>${r.analysis}</td>
         </tr>`).join('');
     document.getElementById('pageInfo').innerText = `Hal ${currentPage} dari ${Math.ceil(filteredTableData.length/rowsPerPage) || 1}`;
 }
 
+// JALANKAN PROSES
 fetchData();
