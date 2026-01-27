@@ -12,11 +12,11 @@ let filteredTableData = [], currentPage = 1, rowsPerPage = 10;
 
 // 2. FUNGSI PEMBANTU (UTILITY)
 function getColor(d) {
-    return d > 80  ? '#800026' :
-           d > 40  ? '#BD0026' :
-           d > 25  ? '#E31A1C' :
-           d > 5   ? '#FC4E2A' :
-                     '#FFEDA0';
+    return d > 80  ? '#006400' :
+           d > 40  ? '#228B22' :
+           d > 25  ? '#FFA500' :
+           d > 5   ? '#FF4500' :
+                     '#8B0000';
 }
 
 function cleanName(name) {
@@ -225,11 +225,11 @@ function updateLegend(stats) {
             
             <div class="legend-pane">
                 <b>Populasi KBLBB</b><hr>
-                <div class="legend-item"><i style="background: #800026"></i> > 80 Unit</div>
-                <div class="legend-item"><i style="background: #BD0026"></i> 41 - 80 Unit</div>
-                <div class="legend-item"><i style="background: #E31A1C"></i> 26 - 40 Unit</div>
-                <div class="legend-item"><i style="background: #FC4E2A"></i> 6 - 25 Unit</div>
-                <div class="legend-item"><i style="background: #FFEDA0"></i> 0 - 5 Unit</div>
+                <div class="legend-item"><i style="background: #006400"></i> > 80 Unit</div>
+                <div class="legend-item"><i style="background: #228B22"></i> 41 - 80 Unit</div>
+                <div class="legend-item"><i style="background: #FFA500"></i> 26 - 40 Unit</div>
+                <div class="legend-item"><i style="background: #FF4500"></i> 6 - 25 Unit</div>
+                <div class="legend-item"><i style="background: #8B0000"></i> 0 - 5 Unit</div>
             </div>
         `;
         return div;
