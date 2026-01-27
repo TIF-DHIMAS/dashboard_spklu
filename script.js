@@ -213,15 +213,14 @@ function updateLegend(stats) {
     legendControl = L.control({ position: 'bottomright' });
 
     legendControl.onAdd = () => {
-        const div = L.DomUtil.create('div', 'legend-container'); // Container utama
+        const div = L.DomUtil.create('div', 'legend-container');
         
-        // Gabungkan dua legend dalam satu container agar rapi berdampingan
         div.innerHTML = `
             <div class="legend-pane">
                 <b>Ringkasan Analisis</b><hr>
-                <div class="legend-item"><i style="background: green; border-radius: 50%;"></i> Optimal: ${stats.optimal}</div>
-                <div class="legend-item"><i style="background: red; border-radius: 50%;"></i> Prioritas: ${stats.relocation}</div>
-                <div style="margin-top:5px; font-weight:bold;">Total: ${stats.total}</div>
+                <div class="legend-item"><i style="background: #43a047; border-radius: 50%;"></i> Optimal: ${stats.optimal}</div>
+                <div class="legend-item"><i style="background: #d32f2f; border-radius: 50%;"></i> Prioritas: ${stats.relocation}</div>
+                <div style="margin-top:5px; font-weight:bold; font-size:10px;">TOTAL UNIT: ${stats.total}</div>
             </div>
             
             <div class="legend-pane">
