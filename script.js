@@ -211,12 +211,28 @@ function applyMapFilter() {
 function updateLegend(stats) {
     if (legendControl) map.removeControl(legendControl);
     legendControl = L.control({ position: 'bottomright' });
+
     legendControl.onAdd = () => {
-        const div = L.DomUtil.create('div', 'legend');
-        div.innerHTML = `<b>Ringkasan Analisis</b><hr>
-            Status Optimal: ${stats.optimal}<br>
-            <span style="color:red">Butuh Relokasi: ${stats.relocation}</span><br>
-            Total Terfilter: ${stats.total}`;
+        const div = L.DomUtil.create('div', 'legend-container'); // Container utama
+        
+        // Gabungkan dua legend dalam satu container agar rapi berdampingan
+        div.innerHTML = `
+            <div class="legend-pane">
+                <b>Ringkasan Analisis</b><hr>
+                <div class="legend-item"><i style="background: green; border-radius: 50%;"></i> Optimal: ${stats.optimal}</div>
+                <div class="legend-item"><i style="background: red; border-radius: 50%;"></i> Prioritas: ${stats.relocation}</div>
+                <div style="margin-top:5px; font-weight:bold;">Total: ${stats.total}</div>
+            </div>
+            
+            <div class="legend-pane">
+                <b>Populasi KBLBB</b><hr>
+                <div class="legend-item"><i style="background: #800026"></i> > 80 Unit</div>
+                <div class="legend-item"><i style="background: #BD0026"></i> 41 - 80 Unit</div>
+                <div class="legend-item"><i style="background: #E31A1C"></i> 26 - 40 Unit</div>
+                <div class="legend-item"><i style="background: #FC4E2A"></i> 6 - 25 Unit</div>
+                <div class="legend-item"><i style="background: #FFEDA0"></i> 0 - 5 Unit</div>
+            </div>
+        `;
         return div;
     };
     legendControl.addTo(map);
