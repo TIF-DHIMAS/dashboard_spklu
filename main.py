@@ -60,6 +60,11 @@ def main():
     response = requests.get(URL_OLAH)
     df = pd.read_csv(StringIO(response.text))
     
+    kriteria = ['RATA2TRANSAKSI', 'KBLBB', 'KAPASITAS', 'BIAYA', 'UMUR']
+    for col in kriteria:
+        # Mengubah kolom menjadi string, ganti koma jadi titik, lalu ubah ke float
+        df[col] = df[col].astype(str).str.replace(',', '.').astype(float)
+    # ---------------------------------------
     # Hitung AHP
     weights, cr = hitung_ahp_ilmiah()
     print(f"Consistency Ratio (CR): {cr:.4f}")
