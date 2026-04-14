@@ -3,65 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoring & DSS SPKLU Kalimantan Barat</title>
-    
+    <title>DSS Monitoring SPKLU UID Kalbar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; padding: 20px; background-color: #f4f7f9; }
-        .header { background: #005aab; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
-        #map { height: 500px; width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 25px; }
-        
-        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f9fa; color: #333; font-weight: 600; }
-        
-        .badge { padding: 5px 10px; border-radius: 12px; font-size: 0.85em; font-weight: bold; }
-        .badge-tambah { background-color: #ffebee; color: #c62828; } /* Merah untuk penambahan */
-        .badge-optimal { background-color: #e8f5e9; color: #2e7d32; } /* Hijau untuk optimal */
-        .badge-relokasi { background-color: #fff3e0; color: #ef6c00; } /* Oranye untuk kandidat pindah */
-        
-        @media (min-width: 768px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-        }
+        :root { --pln-blue: #0072bc; --pln-yellow: #ffec00; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background-color: var(--pln-blue); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        #map { height: 500px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .filter-card { border-radius: 12px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .badge-optimal { background-color: #28a745; }
+        .badge-relokasi { background-color: #dc3545; }
+        .badge-tambah { background-color: #ffc107; color: #000; }
+        .table-container { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Dashboard Keputusan Relokasi SPKLU</h1>
-        <p>Analisis Ilmiah Berbasis AHP & TOPSIS - Update Otomatis via GitHub Actions</p>
+<nav class="navbar navbar-expand-lg mb-4">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1 text-white">DSS SPKLU - Niaga & Pemasaran UID Kalbar</span>
     </div>
+</nav>
 
-    <div id="map"></div>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card filter-card p-3 mb-3">
+                <h6 class="fw-bold mb-3">Filter Dashboard</h6>
+                
+                <label class="small fw-bold">Unit Pelaksana (UP3)</label>
+                <select id="filterUP3" class="form-select mb-3" onchange="applyFilters()">
+                    <option value="ALL">Semua UP3</option>
+                    <option value="21PTK">UP3 Pontianak</option>
+                    <option value="21SKW">UP3 Singkawang</option>
+                    <option value="21SGU">UP3 Sanggau</option>
+                    <option value="21KTP">UP3 Ketapang</option>
+                </select>
 
-    <div class="dashboard-grid">
-        <div class="card">
-            <h3>Visualisasi Skor Kelayakan (Top 10)</h3>
-            <canvas id="chartTopsis" style="max-height: 300px;"></canvas>
+                <label class="small fw-bold">Tipe Charging</label>
+                <select id="filterType" class="form-select mb-3" onchange="applyFilters()">
+                    <option value="ALL">Semua Tipe</option>
+                    <option value="ULTRA FAST CHARGING">Ultra Fast</option>
+                    <option value="FAST CHARGING">Fast Charging</option>
+                    <option value="MEDIUM CHARGING">Medium Charging</option>
+                </select>
+
+                <label class="small fw-bold">Kapasitas (kW)</label>
+                <select id="filterKapasitas" class="form-select mb-3" onchange="applyFilters()">
+                    <option value="ALL">Semua Kapasitas</option>
+                </select>
+
+                <label class="small fw-bold">Status Rekomendasi</label>
+                <select id="filterStatus" class="form-select" onchange="applyFilters()">
+                    <option value="ALL">Semua Status</option>
+                    <option value="Optimal">Optimal</option>
+                    <option value="KANDIDAT RELOKASI">Kandidat Relokasi</option>
+                    <option value="TAMBAH UNIT">Tambah Unit</option>
+                </select>
+            </div>
         </div>
 
-        <div class="card">
-            <h3>Tabel Saran Rekomendasi Strategis</h3>
-            <table id="recomTable">
-                <thead>
-                    <tr>
-                        <th>Nama SPKLU</th>
-                        <th>Rata-rata Transaksi</th>
-                        <th>Skor TOPSIS</th>
-                        <th>Rekomendasi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    </tbody>
-            </table>
+        <div class="col-md-9">
+            <div id="map"></div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="app.js"></script>
+    <div class="row">
+        <div class="col-12 mb-5">
+            <div class="table-container">
+                <h5 class="fw-bold mb-3">Matriks Rekomendasi Strategis</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="mainTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID - Nama Stasiun</th>
+                                <th>UP3</th>
+                                <th>Tipe</th>
+                                <th>Kapasitas</th>
+                                <th>Skor TOPSIS</th>
+                                <th>Rekomendasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
