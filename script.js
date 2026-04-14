@@ -1,154 +1,43 @@
-// ===============================
-// CONFIG
-// ===============================
-const URL_TOPSIS = "https://raw.githubusercontent.com/TIF-DHIMAS/dashboard_spklu/refs/heads/main/data/topsis.json"; // GANTI
+async function loadDashboard() {
+    const response = await fetch('data_spklu.json');
+    const data = await response.json();
 
-let map;
-let markersLayer = L.layerGroup();
-let topsisRaw = [];
+    // 1. Leaflet Map
+    const map = L.map('map').setView([-0.07, 109.38], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-// ===============================
-// FETCH DATA
-// ===============================
-async function fetchTopsis() {
-    const res = await fetch(URL_TOPSIS);
-    const json = await res.json();
-
-    topsisRaw = json.data; // penting!
-}
-
-// ===============================
-// INIT MAP
-// ===============================
-function initMap() {
-    map = L.map('map').setView([-0.02, 109.34], 12);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
-
-    markersLayer.addTo(map);
-}
-
-// dummy koordinat (sementara)
-function getCoord() {
-    return [-0.02 + Math.random()/10, 109.34 + Math.random()/10];
-}
-
-// warna kategori
-function getColor(kat) {
-    if (kat === "Optimal") return "green";
-    if (kat === "Evaluasi") return "orange";
-    return "red";
-}
-
-// ===============================
-// RENDER MAP
-// ===============================
-function renderMap(filter="all") {
-    markersLayer.clearLayers();
-
-    topsisRaw.forEach(d => {
-        if(filter !== "all" && d.kategori !== filter) return;
-
-        const coord = getCoord();
-
-        const marker = L.circleMarker(coord, {
-            radius: 8,
-            color: getColor(d.kategori)
-        });
-
-        marker.bindPopup(`
-            <b>${d.nama}</b><br>
-            Skor: ${d.skor}<br>
-            Kategori: ${d.kategori}
-        `);
-
-        markersLayer.addLayer(marker);
+    data.forEach(d => {
+        const color = d.RATA2TRANSAKSI >= 50 ? 'red' : 'green';
+        L.circleMarker([d.Latitude, d.Longitude], {
+            color: color, radius: d.score * 15, fillOpacity: 0.7
+        }).addTo(map).bindPopup(`<b>${d['Nama Stasiun']}</b><br>Skor: ${d.score.toFixed(3)}<br>${d.REKOMENDASI}`);
     });
-}
 
-// ===============================
-// KPI
-// ===============================
-function renderKPI() {
-    document.getElementById("total").innerText = topsisRaw.length;
-
-    document.getElementById("optimal").innerText =
-        topsisRaw.filter(d => d.kategori === "Optimal").length;
-
-    document.getElementById("evaluasi").innerText =
-        topsisRaw.filter(d => d.kategori === "Evaluasi").length;
-
-    document.getElementById("critical").innerText =
-        topsisRaw.filter(d => d.kategori === "Critical").length;
-}
-
-// ===============================
-// CHART
-// ===============================
-function renderChart() {
-    const labels = topsisRaw.map(d => d.nama);
-    const data = topsisRaw.map(d => d.skor);
-
-    new Chart(document.getElementById("chart"), {
+    // 2. Chart.js
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: labels,
+            labels: data.slice(0, 10).map(d => d['Nama Stasiun']),
             datasets: [{
-                label: 'Skor TOPSIS',
-                data: data
+                label: 'Top 10 Skor Prioritas (TOPSIS)',
+                data: data.slice(0, 10).map(d => d.score),
+                backgroundColor: '#005aab'
             }]
         }
     });
-}
 
-// ===============================
-// TABLE
-// ===============================
-function renderTable() {
-    let html = "";
-
-    topsisRaw
-        .sort((a,b)=>b.skor-a.skor)
-        .forEach((d,i)=>{
-            html += `
-                <tr>
-                    <td>${i+1}</td>
-                    <td>${d.nama}</td>
-                    <td>${d.skor}</td>
-                    <td>
-                        <span class="badge ${d.kategori.toLowerCase()}">
-                            ${d.kategori}
-                        </span>
-                    </td>
-                </tr>
-            `;
-        });
-
-    document.getElementById("table").innerHTML = html;
-}
-
-// ===============================
-// FILTER
-// ===============================
-function setupFilter() {
-    document.getElementById("filter").addEventListener("change", (e)=>{
-        renderMap(e.target.value);
+    // 3. Table Recommendation
+    const tbody = document.querySelector('#recomTable tbody');
+    data.forEach(d => {
+        const row = `<tr>
+            <td>${d['Nama Stasiun']}</td>
+            <td>${d.RATA2TRANSAKSI}</td>
+            <td>${d.score.toFixed(4)}</td>
+            <td>${d.REKOMENDASI}</td>
+        </tr>`;
+        tbody.innerHTML += row;
     });
 }
 
-// ===============================
-// INIT
-// ===============================
-async function init() {
-    await fetchTopsis();
-    initMap();
-    renderMap();
-    renderKPI();
-    renderChart();
-    renderTable();
-    setupFilter();
-}
-
-init();
+loadDashboard();
