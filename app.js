@@ -144,9 +144,12 @@ function renderDashboard(data) {
                 <div style="font-family: Arial">
                     <b>${displayName}</b><br>
                     <hr style="margin: 5px 0">
-                    ULP: ${valULP}<br>
-                    Skor: ${parseFloat(item.score).toFixed(4)}<br>
-                    <b>Status: ${item.REKOMENDASI}</b>
+                    ULP : ${valULP}<br>
+                    Rata2: ${item.RATA2TRANSAKSI} Kali Transaksi<br>
+                    Kapasitas Daya : ${item.KAPASITAS} KW<br>
+                    Umur  : ${item.UMUR} Tahun<br>
+                    Skor : ${parseFloat(item.score).toFixed(4)}<br>
+                    <b>Status : ${item.REKOMENDASI}</b>
                 </div>
             `);
             markerLayer.addLayer(marker);
