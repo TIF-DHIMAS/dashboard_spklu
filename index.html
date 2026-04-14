@@ -2,47 +2,66 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>DSS SPKLU Kalimantan Barat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring & DSS SPKLU Kalimantan Barat</title>
+    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; }
-        #map { height: 500px; width: 100%; border-radius: 8px; margin-bottom: 20px; }
-        .container { display: flex; flex-direction: column; gap: 20px; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #005aab; color: white; }
-        tr:nth-child(even) { background-color: #f2f2f2; }
-        .status-tambah { color: #d9534f; font-weight: bold; }
-        .status-aman { color: #5cb85c; }
+        body { font-family: 'Inter', -apple-system, sans-serif; margin: 0; padding: 20px; background-color: #f4f7f9; }
+        .header { background: #005aab; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        #map { height: 500px; width: 100%; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #333; font-weight: 600; }
+        
+        .badge { padding: 5px 10px; border-radius: 12px; font-size: 0.85em; font-weight: bold; }
+        .badge-tambah { background-color: #ffebee; color: #c62828; } /* Merah untuk penambahan */
+        .badge-optimal { background-color: #e8f5e9; color: #2e7d32; } /* Hijau untuk optimal */
+        .badge-relokasi { background-color: #fff3e0; color: #ef6c00; } /* Oranye untuk kandidat pindah */
+        
+        @media (min-width: 768px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <h1>Sistem Pendukung Keputusan Relokasi SPKLU</h1>
-    
-    <div class="container">
-        <div id="map"></div>
-        
-        <div style="width: 100%; overflow-x: auto;">
-            <canvas id="chartTopsis" height="100"></canvas>
+
+    <div class="header">
+        <h1>Dashboard Keputusan Relokasi SPKLU</h1>
+        <p>Analisis Ilmiah Berbasis AHP & TOPSIS - Update Otomatis via GitHub Actions</p>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="dashboard-grid">
+        <div class="card">
+            <h3>Visualisasi Skor Kelayakan (Top 10)</h3>
+            <canvas id="chartTopsis" style="max-height: 300px;"></canvas>
         </div>
 
-        <h3>Tabel Rekomendasi Strategis</h3>
-        <table id="tabelRekomendasi">
-            <thead>
-                <tr>
-                    <th>Nama SPKLU</th>
-                    <th>Rata-rata Transaksi</th>
-                    <th>Skor TOPSIS</th>
-                    <th>Rekomendasi Tindakan</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="card">
+            <h3>Tabel Saran Rekomendasi Strategis</h3>
+            <table id="recomTable">
+                <thead>
+                    <tr>
+                        <th>Nama SPKLU</th>
+                        <th>Rata-rata Transaksi</th>
+                        <th>Skor TOPSIS</th>
+                        <th>Rekomendasi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
