@@ -10,9 +10,10 @@ URL_OLAH = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-Ub
 def hitung_ahp_ilmiah():
     """
     Menghitung bobot kriteria menggunakan metode AHP.
-    Kriteria: 1.Rata2Trans, 2.KBLBB, 3.Kapasitas, 4.Biaya, 5.Umur
+    Urutan: 1.Rata2Trans, 2.KBLBB, 3.Kapasitas, 4.Biaya, 5.Umur
     """
-    kriteria_names = ['Rata2 Transaksi', 'Populasi KBLBB', 'Kapasitas', 'Biaya Ops', 'Umur Aset']
+    # Nama Tampilan (Label untuk Dashboard)
+    names = ['Rata2 Transaksi', 'Populasi KBLBB', 'Kapasitas', 'Biaya Ops', 'Umur Aset']
     
     # Matriks Perbandingan Berpasangan
     matrix = np.array([
@@ -34,19 +35,30 @@ def hitung_ahp_ilmiah():
     ri = 1.12  # RI untuk n=5
     cr = ci / ri
     
-    return weights, cr, kriteria_names
+    return weights, cr, names
 
 def hitung_topsis(df, weights):
+    """
+    Menghitung ranking menggunakan metode TOPSIS
+    """
+    # Nama kolom teknis di Google Sheets
     kriteria = ['RATA2TRANSAKSI', 'KBLBB', 'KAPASITAS', 'BIAYA', 'UMUR']
+    # 1 = Benefit, 0 = Cost
     is_benefit = [1, 1, 1, 0, 0] 
     
     matrix = df[kriteria].values.astype(float)
+    
+    # 1. Normalisasi
     norm_matrix = matrix / np.sqrt((matrix**2).sum(axis=0))
+    
+    # 2. Normalisasi Terbobot
     weighted_matrix = norm_matrix * weights
     
+    # 3. Solusi Ideal
     a_plus = [np.max(weighted_matrix[:, i]) if is_benefit[i] else np.min(weighted_matrix[:, i]) for i in range(len(kriteria))]
     a_minus = [np.min(weighted_matrix[:, i]) if is_benefit[i] else np.max(weighted_matrix[:, i]) for i in range(len(kriteria))]
     
+    # 4. Jarak Euclidean
     d_plus = np.sqrt(((weighted_matrix - a_plus)**2).sum(axis=1))
     d_minus = np.sqrt(((weighted_matrix - a_minus)**2).sum(axis=1))
     
@@ -54,40 +66,56 @@ def hitung_topsis(df, weights):
 
 def main():
     print("Memulai proses pengambilan data...")
-    response = requests.get(URL_OLAH)
-    if response.status_code != 200:
-        print("Gagal mengambil data!")
+    try:
+        response = requests.get(URL_OLAH)
+        response.raise_for_status()
+    except Exception as e:
+        print(f"Gagal mengambil data: {e}")
         return
 
+    # Load data
     df = pd.read_csv(StringIO(response.text))
-    df = df.dropna(subset=['Nama Stasiun'])
 
+    # --- PEMBERSIHAN DATA ---
+    df = df.dropna(subset=['Nama Stasiun'])
+    
     kriteria_cols = ['RATA2TRANSAKSI', 'KBLBB', 'KAPASITAS', 'BIAYA', 'UMUR']
     for col in kriteria_cols:
         if col in df.columns:
+            # Bersihkan format angka (koma ke titik)
             df[col] = df[col].astype(str).str.replace(',', '.').str.strip()
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
     
-    # 1. Hitung AHP & Simpan Bobot Terpisah
+    # --- PERHITUNGAN AHP ---
     weights, cr, names = hitung_ahp_ilmiah()
     
+    # Fix: Paksa konversi ke tipe data Python Native (float & bool) untuk JSON
     ahp_results = {
-        "consistency_ratio": round(cr, 4),
-        "is_consistent": cr < 0.1,
-        "details": [{"kriteria": n, "bobot": round(w * 100, 2)} for n, w in zip(names, weights)]
+        "consistency_ratio": float(round(cr, 4)),
+        "is_consistent": bool(cr < 0.1),
+        "details": [
+            {
+                "kriteria": str(n),
+                "bobot": float(round(w * 100, 2))
+            } for n, w in zip(names, weights)
+        ]
     }
+    
     with open('ahp_results.json', 'w') as f:
         json.dump(ahp_results, f, indent=4)
+    print("File ahp_results.json berhasil dibuat.")
 
-    # 2. Hitung TOPSIS
+    # --- PERHITUNGAN TOPSIS ---
     df['score'] = hitung_topsis(df, weights)
     df = df.sort_values(by='score', ascending=False)
 
-    # 3. Logika Rekomendasi
+    # --- LOGIKA REKOMENDASI ---
     median_score = df['score'].median()
+    # Ambil pool donor (skor di bawah median)
     donor_pool = df[df['score'] < median_score]['Nama Stasiun'].tolist()
     
     def tentukan_rekomendasi(row):
+        # Berdasarkan koreksi user: "jumlah transaksi aja"
         if row['RATA2TRANSAKSI'] >= 30:
             donor = donor_pool.pop() if donor_pool else "Unit Baru"
             return f"TAMBAH UNIT (Dari {donor})"
@@ -98,9 +126,12 @@ def main():
 
     df['REKOMENDASI'] = df.apply(tentukan_rekomendasi, axis=1)
 
-    # 4. Simpan Data Utama
-    df.to_json('data_spklu.json', orient='records')
-    print(f"Proses Berhasil! CR: {cr:.4f}")
+    # --- SIMPAN HASIL UTAMA ---
+    # Konversi DataFrame ke JSON Records
+    df.to_json('data_spklu.json', orient='records', double_precision=4)
+    
+    print(f"Proses Berhasil! Skor CR: {cr:.4f}")
+    print("File data_spklu.json telah diperbarui.")
 
 if __name__ == "__main__":
     main()
