@@ -1,15 +1,25 @@
-const URL_TOPSIS = "https://raw.githubusercontent.com/USERNAME/REPO/main/data/topsis.json";
+// ===============================
+// CONFIG
+// ===============================
+const URL_TOPSIS = "https://raw.githubusercontent.com/USERNAME/REPO/main/data/topsis.json"; // GANTI
 
 let map;
 let markersLayer = L.layerGroup();
 let topsisRaw = [];
 
+// ===============================
+// FETCH DATA
+// ===============================
 async function fetchTopsis() {
     const res = await fetch(URL_TOPSIS);
-    topsisRaw = await res.json();
+    const json = await res.json();
+
+    topsisRaw = json.data; // penting!
 }
 
-// ================= MAP =================
+// ===============================
+// INIT MAP
+// ===============================
 function initMap() {
     map = L.map('map').setView([-0.02, 109.34], 12);
 
@@ -20,24 +30,28 @@ function initMap() {
     markersLayer.addTo(map);
 }
 
-// dummy koordinat
-function getCoord(nama) {
+// dummy koordinat (sementara)
+function getCoord() {
     return [-0.02 + Math.random()/10, 109.34 + Math.random()/10];
 }
 
+// warna kategori
 function getColor(kat) {
     if (kat === "Optimal") return "green";
     if (kat === "Evaluasi") return "orange";
     return "red";
 }
 
+// ===============================
+// RENDER MAP
+// ===============================
 function renderMap(filter="all") {
     markersLayer.clearLayers();
 
     topsisRaw.forEach(d => {
         if(filter !== "all" && d.kategori !== filter) return;
 
-        const coord = getCoord(d.nama);
+        const coord = getCoord();
 
         const marker = L.circleMarker(coord, {
             radius: 8,
@@ -54,7 +68,9 @@ function renderMap(filter="all") {
     });
 }
 
-// ================= KPI =================
+// ===============================
+// KPI
+// ===============================
 function renderKPI() {
     document.getElementById("total").innerText = topsisRaw.length;
 
@@ -68,7 +84,9 @@ function renderKPI() {
         topsisRaw.filter(d => d.kategori === "Critical").length;
 }
 
-// ================= CHART =================
+// ===============================
+// CHART
+// ===============================
 function renderChart() {
     const labels = topsisRaw.map(d => d.nama);
     const data = topsisRaw.map(d => d.skor);
@@ -85,7 +103,9 @@ function renderChart() {
     });
 }
 
-// ================= TABLE =================
+// ===============================
+// TABLE
+// ===============================
 function renderTable() {
     let html = "";
 
@@ -97,7 +117,11 @@ function renderTable() {
                     <td>${i+1}</td>
                     <td>${d.nama}</td>
                     <td>${d.skor}</td>
-                    <td>${d.kategori}</td>
+                    <td>
+                        <span class="badge ${d.kategori.toLowerCase()}">
+                            ${d.kategori}
+                        </span>
+                    </td>
                 </tr>
             `;
         });
@@ -105,14 +129,18 @@ function renderTable() {
     document.getElementById("table").innerHTML = html;
 }
 
-// ================= FILTER =================
+// ===============================
+// FILTER
+// ===============================
 function setupFilter() {
     document.getElementById("filter").addEventListener("change", (e)=>{
         renderMap(e.target.value);
     });
 }
 
-// ================= INIT =================
+// ===============================
+// INIT
+// ===============================
 async function init() {
     await fetchTopsis();
     initMap();
