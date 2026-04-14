@@ -4,9 +4,10 @@ let rawData = [];
 
 // 1. Inisialisasi Peta
 function initMap() {
-    map = L.map('map').setView([-0.026330, 109.342504], 7); // Fokus Kalbar
+    map = L.map('map').setView([-0.026330, 109.342504], 7); 
+    // Ganti ke URL standar ini jika muncul error merah
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; PLN UID Kalbar'
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
     markerLayer.addTo(map);
 }
