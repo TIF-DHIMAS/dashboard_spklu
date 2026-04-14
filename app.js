@@ -95,7 +95,7 @@ function renderTable(data) {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${row['Nama Stasiun']}</strong></td>
-                <td>${row.RATA2TRANSAKSI} unit/bln</td>
+                <td>${row.RATA2TRANSAKSI} kali/bln</td>
                 <td>${Number(row.score).toFixed(4)}</td>
                 <td><span class="badge ${badgeClass}">${row.REKOMENDASI}</span></td>
             `;
