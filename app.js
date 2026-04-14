@@ -56,47 +56,60 @@ function applyFilters() {
 
 // 5. Render Marker dan Tabel
 function renderDashboard(data) {
-    // Bersihkan Marker & Tabel
+    // 1. Tampilkan Bobot Kriteria AHP
+    // Sesuaikan nilai persen di bawah ini dengan hasil perhitungan di main.py Anda
+    const ahpBody = document.getElementById('ahpWeightBody');
+    ahpBody.innerHTML = `
+        <tr class="fw-bold text-primary">
+            <td>15%</td>
+            <td>10%</td>
+            <td>30%</td>
+            <td>35%</td>
+            <td>10%</td>
+        </tr>`;
+
+    // 2. Bersihkan Tabel & Marker
     markerLayer.clearLayers();
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
 
     data.forEach(item => {
-        // Gabungkan ID dan Nama sesuai permintaan
-        const displayName = `${item.ID_SPKLU || 'N/A'} - ${item['Nama Stasiun']}`;
+        // Format ID - Nama Stasiun
+        const idDisplay = item.ID_SPKLU ? parseFloat(item.ID_SPKLU).toFixed(0) : 'N/A';
+        const displayName = `${idDisplay} - ${item['Nama Stasiun']}`;
         
-        // Pilih Warna Badge
-        let badgeClass = 'badge-optimal';
-        if(item.REKOMENDASI.includes('RELOKASI')) badgeClass = 'badge-relokasi';
-        if(item.REKOMENDASI.includes('TAMBAH')) badgeClass = 'badge-tambah';
+        // Menggunakan data ULP langsung dari spreadsheet/JSON
+        const valULP = item.ULP || "N/A";
 
-        // Update Tabel
+        // Tentukan Warna Badge
+        let badgeClass = 'status-optimal';
+        if(item.REKOMENDASI.includes('RELOKASI')) badgeClass = 'status-relokasi';
+        if(item.REKOMENDASI.includes('TAMBAH')) badgeClass = 'status-tambah';
+
+        // Render Baris Tabel
         const row = `<tr>
             <td class="fw-bold">${displayName}</td>
-            <td>${item.UP3}</td>
-            <td><small>${item['TYPE CHARGE']}</small></td>
-            <td>${item.KAPASITAS} kW</td>
-            <td>${parseFloat(item.score).toFixed(4)}</td>
-            <td><span class="badge ${badgeClass} p-2">${item.REKOMENDASI}</span></td>
+            <td><span class="badge bg-light text-dark border">${valULP}</span></td>
+            <td><small class="text-muted">${item['TYPE CHARGE'] || '-'}</small></td>
+            <td class="text-center">${item.KAPASITAS || 0} kW</td>
+            <td class="text-center fw-bold text-primary">${parseFloat(item.score || 0).toFixed(4)}</td>
+            <td><span class="badge ${badgeClass} px-3 py-2 rounded-pill shadow-sm">${item.REKOMENDASI}</span></td>
         </tr>`;
         tbody.innerHTML += row;
 
-        // Update Peta
-        const markerColor = item.REKOMENDASI.includes('RELOKASI') ? 'red' : 
-                            item.REKOMENDASI.includes('TAMBAH') ? 'orange' : 'green';
+        // 3. Render Marker Peta
+        const mColor = item.REKOMENDASI.includes('RELOKASI') ? '#d93025' : 
+                       (item.REKOMENDASI.includes('TAMBAH') ? '#f57f17' : '#1e7e34');
         
         const marker = L.circleMarker([item.Latitude, item.Longitude], {
-            radius: 8,
-            fillColor: markerColor,
+            radius: 9,
+            fillColor: mColor,
             color: "#fff",
-            weight: 1,
+            weight: 2,
             opacity: 1,
-            fillOpacity: 0.8
-        }).bindPopup(`
-            <b>${displayName}</b><br>
-            Status: ${item.REKOMENDASI}<br>
-            Transaksi: ${item.RATA2TRANSAKSI}
-        `);
+            fillOpacity: 0.9
+        }).bindPopup(`<b>${displayName}</b><br>ULP: ${valULP}<br>Rekomendasi: ${item.REKOMENDASI}`);
+        
         markerLayer.addLayer(marker);
     });
 }
