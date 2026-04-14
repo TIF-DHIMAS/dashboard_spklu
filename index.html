@@ -68,30 +68,53 @@
             <div id="map"></div>
         </div>
     </div>
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="table-container">
+            <h5 class="section-title">BOBOT KRITERIA METODE AHP</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Kapasitas</th>
+                            <th>Biaya Investasi</th>
+                            <th>Populasi KBLBB</th>
+                            <th>Rata-rata Transaksi</th>
+                            <th>Umur Aset</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ahpWeightBody">
+                        </tbody>
+                </table>
+            </div>
+            <p class="small text-muted mt-2">* Bobot ini merupakan hasil perbandingan berpasangan (Pairwise Comparison) yang telah dihitung melalui skrip Python.</p>
+        </div>
+    </div>
+</div>
 
-    <div class="row">
-        <div class="col-12 mb-5">
-            <div class="table-container">
-                <h5 class="fw-bold mb-3">Matriks Rekomendasi Strategis</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle" id="mainTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th>ID - Nama Stasiun</th>
-                                <th>ULP</th>
-                                <th>Tipe</th>
-                                <th>Kapasitas</th>
-                                <th>Skor TOPSIS</th>
-                                <th>Rekomendasi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            </tbody>
-                    </table>
-                </div>
+<div class="row">
+    <div class="col-12">
+        <div class="table-container">
+            <h5 class="section-title">MATRIKS REKOMENDASI STRATEGIS (AHP-TOPSIS)</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID - Nama Stasiun</th>
+                            <th>ULP</th>
+                            <th>Tipe Charger</th>
+                            <th class="text-center">Kapasitas</th>
+                            <th class="text-center">Skor Kelayakan</th>
+                            <th>Aksi Strategis</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
+    
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
