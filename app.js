@@ -46,11 +46,11 @@ function renderAHPTable(data) {
 
     ahpBody.innerHTML = `
         <tr class="fw-bold text-primary">
-            <td>${getWeight('Rata2 Kali Transaksi')}</td>
-            <td>${getWeight('Pengguna EV Per Kota/Kab')}</td>
-            <td>${getWeight('Kapasitas Daya Mesin')}</td>
-            <td>${getWeight('Biaya Relokasi')}</td>
-            <td>${getWeight('Umur SPKLU')}</td>
+            <td>${getWeight('Rata2')}</td>
+            <td>${getWeight('KBLBB')}</td>
+            <td>${getWeight('Kapasitas')}</td>
+            <td>${getWeight('Biaya')}</td>
+            <td>${getWeight('Umur')}</td>
         </tr>`;
 
     // 2. Update Footer dengan Angka Konsistensi
