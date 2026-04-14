@@ -1,7 +1,7 @@
 // ===============================
 // CONFIG
 // ===============================
-const URL_TOPSIS = "https://raw.githubusercontent.com/USERNAME/REPO/main/data/topsis.json"; // GANTI
+const URL_TOPSIS = "https://raw.githubusercontent.com/TIF-DHIMAS/dashboard_spklu/refs/heads/main/data/topsis.json"; // GANTI
 
 let map;
 let markersLayer = L.layerGroup();
