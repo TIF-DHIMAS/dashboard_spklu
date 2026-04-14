@@ -4,13 +4,16 @@ import json
 import requests
 from io import StringIO
 
-# URL CSV dari Google Sheets (Pastikan URL ini sudah di-publish as CSV)
+# URL CSV dari Google Sheets
 URL_OLAH = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=312487335&single=true&output=csv'
+
 def hitung_ahp_ilmiah():
     """
     Menghitung bobot kriteria menggunakan metode AHP.
     Kriteria: 1.Rata2Trans, 2.KBLBB, 3.Kapasitas, 4.Biaya, 5.Umur
     """
+    kriteria_names = ['Rata2 Transaksi', 'Populasi KBLBB', 'Kapasitas', 'Biaya Ops', 'Umur Aset']
+    
     # Matriks Perbandingan Berpasangan
     matrix = np.array([
         [1, 3, 3, 5, 7],      # Rata2Trans
@@ -31,97 +34,73 @@ def hitung_ahp_ilmiah():
     ri = 1.12  # RI untuk n=5
     cr = ci / ri
     
-    return weights, cr
+    return weights, cr, kriteria_names
 
 def hitung_topsis(df, weights):
-    """
-    Menghitung ranking menggunakan metode TOPSIS
-    """
     kriteria = ['RATA2TRANSAKSI', 'KBLBB', 'KAPASITAS', 'BIAYA', 'UMUR']
-    # 1 = Benefit (makin besar makin baik), 0 = Cost (makin kecil makin baik)
     is_benefit = [1, 1, 1, 0, 0] 
     
-    # Ambil matriks keputusan
     matrix = df[kriteria].values.astype(float)
-    
-    # 1. Normalisasi Matriks
     norm_matrix = matrix / np.sqrt((matrix**2).sum(axis=0))
-    
-    # 2. Normalisasi Terbobot
     weighted_matrix = norm_matrix * weights
     
-    # 3. Solusi Ideal Positif (A+) dan Negatif (A-)
     a_plus = [np.max(weighted_matrix[:, i]) if is_benefit[i] else np.min(weighted_matrix[:, i]) for i in range(len(kriteria))]
     a_minus = [np.min(weighted_matrix[:, i]) if is_benefit[i] else np.max(weighted_matrix[:, i]) for i in range(len(kriteria))]
     
-    # 4. Jarak Euclidean (D+ dan D-)
     d_plus = np.sqrt(((weighted_matrix - a_plus)**2).sum(axis=1))
     d_minus = np.sqrt(((weighted_matrix - a_minus)**2).sum(axis=1))
     
-    # 5. Nilai Preferensi (Skor Akhir)
-    score = d_minus / (d_plus + d_minus)
-    return score
+    return d_minus / (d_plus + d_minus)
 
 def main():
     print("Memulai proses pengambilan data...")
     response = requests.get(URL_OLAH)
     if response.status_code != 200:
-        print("Gagal mengambil data dari Google Sheets!")
+        print("Gagal mengambil data!")
         return
 
-    # Load data ke DataFrame
     df = pd.read_csv(StringIO(response.text))
-
-    # --- PEMBERSIHAN DATA ---
-    # 1. Buang baris yang tidak memiliki Nama Stasiun (baris kosong di bawah GSheet)
     df = df.dropna(subset=['Nama Stasiun'])
 
-    # 2. Konversi kolom kriteria ke angka (Koma jadi Titik)
-    kriteria = ['RATA2TRANSAKSI', 'KBLBB', 'KAPASITAS', 'BIAYA', 'UMUR']
-    for col in kriteria:
+    kriteria_cols = ['RATA2TRANSAKSI', 'KBLBB', 'KAPASITAS', 'BIAYA', 'UMUR']
+    for col in kriteria_cols:
         if col in df.columns:
-            # Ganti koma dengan titik, bersihkan spasi, lalu ubah ke float
             df[col] = df[col].astype(str).str.replace(',', '.').str.strip()
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
     
-    # --- PERHITUNGAN ---
-    # 1. Hitung Bobot AHP
-    weights, cr = hitung_ahp_ilmiah()
-    print(f"Consistency Ratio (CR): {cr:.4f}")
+    # 1. Hitung AHP & Simpan Bobot Terpisah
+    weights, cr, names = hitung_ahp_ilmiah()
     
-    if cr > 0.1:
-        print("Peringatan: Matriks AHP tidak konsisten!")
+    ahp_results = {
+        "consistency_ratio": round(cr, 4),
+        "is_consistent": cr < 0.1,
+        "details": [{"kriteria": n, "bobot": round(w * 100, 2)} for n, w in zip(names, weights)]
+    }
+    with open('ahp_results.json', 'w') as f:
+        json.dump(ahp_results, f, indent=4)
 
-    # 2. Hitung Ranking TOPSIS
+    # 2. Hitung TOPSIS
     df['score'] = hitung_topsis(df, weights)
-    
-    # 3. Sorting berdasarkan skor tertinggi
     df = df.sort_values(by='score', ascending=False)
 
-    # --- LOGIKA REKOMENDASI ---
-    # Ambil daftar stasiun dengan skor terendah sebagai kandidat donor relokasi
-    donor_pool = df[df['score'] < df['score'].median()]['Nama Stasiun'].tolist()
+    # 3. Logika Rekomendasi
+    median_score = df['score'].median()
+    donor_pool = df[df['score'] < median_score]['Nama Stasiun'].tolist()
     
     def tentukan_rekomendasi(row):
-        # Jika transaksi tinggi (misal > 30), perlu tambah unit
         if row['RATA2TRANSAKSI'] >= 30:
             donor = donor_pool.pop() if donor_pool else "Unit Baru"
-            return f"TAMBAH UNIT (Pindahkan mesin dari {donor})"
-        # Jika skor kelayakan sangat rendah (misal < 0.2), kandidat relokasi
+            return f"TAMBAH UNIT (Dari {donor})"
         elif row['score'] < 0.2:
-            return "KANDIDAT RELOKASI (Efektivitas Rendah)"
+            return "KANDIDAT RELOKASI"
         else:
             return "Optimal"
 
     df['REKOMENDASI'] = df.apply(tentukan_rekomendasi, axis=1)
 
-    # --- SIMPAN HASIL ---
-    # Simpan ke JSON untuk dibaca oleh JavaScript (app.js)
-    result_json = df.to_json(orient='records')
-    with open('data_spklu.json', 'w') as f:
-        f.write(result_json)
-    
-    print("Proses Berhasil! File data_spklu.json telah diperbarui.")
+    # 4. Simpan Data Utama
+    df.to_json('data_spklu.json', orient='records')
+    print(f"Proses Berhasil! CR: {cr:.4f}")
 
 if __name__ == "__main__":
     main()
