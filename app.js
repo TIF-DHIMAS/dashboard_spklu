@@ -1,107 +1,107 @@
-/**
- * app.js - Visualisasi Dashboard SPKLU
- * Mengambil data hasil perhitungan AHP & TOPSIS dari Python (JSON)
- */
+let map;
+let markerLayer = L.layerGroup();
+let rawData = [];
 
-async function initDashboard() {
+// 1. Inisialisasi Peta
+function initMap() {
+    map = L.map('map').setView([-0.026330, 109.342504], 7); // Fokus Kalbar
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; PLN UID Kalbar'
+    }).addTo(map);
+    markerLayer.addTo(map);
+}
+
+// 2. Load Data dari JSON (Hasil main.py)
+async function fetchData() {
     try {
-        // Mengambil data JSON yang dihasilkan otomatis oleh skrip Python
         const response = await fetch('data_spklu.json');
-        if (!response.ok) throw new Error('Data JSON tidak ditemukan. Pastikan Python script sudah berjalan.');
+        rawData = await response.json();
         
-        const data = await response.json();
-
-        renderMap(data);
-        renderChart(data);
-        renderTable(data);
-
+        populateKapasitasFilter(rawData);
+        renderDashboard(rawData);
     } catch (error) {
-        console.error('Error loading dashboard:', error);
-        document.body.innerHTML += `<div style="color:red; padding:20px;">Error: ${error.message}</div>`;
+        console.error("Gagal memuat data JSON:", error);
     }
 }
 
-function renderMap(data) {
-    // Pusat peta: Kalimantan Barat
-    const map = L.map('map').setView([-0.07, 109.38], 7);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+// 3. Mengisi Dropdown Kapasitas secara Dinamis
+function populateKapasitasFilter(data) {
+    const capacities = [...new Set(data.map(item => item.KAPASITAS))].sort((a,b) => a-b);
+    const select = document.getElementById('filterKapasitas');
+    capacities.forEach(cap => {
+        let opt = document.createElement('option');
+        opt.value = cap;
+        opt.innerHTML = `${cap} kW`;
+        select.appendChild(opt);
+    });
+}
 
-    data.forEach(row => {
-        // Warna marker berdasarkan transaksi (Ramai = Merah, Sepi = Hijau)
-        const markerColor = row.RATA2TRANSAKSI >= 50 ? '#c62828' : '#2e7d32';
+// 4. Logika Filter
+function applyFilters() {
+    const fUP3 = document.getElementById('filterUP3').value;
+    const fType = document.getElementById('filterType').value;
+    const fCap = document.getElementById('filterKapasitas').value;
+    const fStatus = document.getElementById('filterStatus').value;
+
+    const filtered = rawData.filter(item => {
+        return (fUP3 === 'ALL' || item.UP3 === fUP3) &&
+               (fType === 'ALL' || item['TYPE CHARGE'] === fType) &&
+               (fCap === 'ALL' || item.KAPASITAS.toString() === fCap) &&
+               (fStatus === 'ALL' || item.REKOMENDASI.toUpperCase().includes(fStatus.toUpperCase()));
+    });
+
+    renderDashboard(filtered);
+}
+
+// 5. Render Marker dan Tabel
+function renderDashboard(data) {
+    // Bersihkan Marker & Tabel
+    markerLayer.clearLayers();
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+
+    data.forEach(item => {
+        // Gabungkan ID dan Nama sesuai permintaan
+        const displayName = `${item.ID_SPKLU || 'N/A'} - ${item['Nama Stasiun']}`;
         
-        // Ukuran marker berdasarkan skor TOPSIS
-        const radius = row.score * 25;
+        // Pilih Warna Badge
+        let badgeClass = 'badge-optimal';
+        if(item.REKOMENDASI.includes('RELOKASI')) badgeClass = 'badge-relokasi';
+        if(item.REKOMENDASI.includes('TAMBAH')) badgeClass = 'badge-tambah';
 
-        L.circleMarker([row.Latitude, row.Longitude], {
-            radius: radius < 5 ? 5 : radius, // Ukuran minimal agar tetap terlihat
+        // Update Tabel
+        const row = `<tr>
+            <td class="fw-bold">${displayName}</td>
+            <td>${item.UP3}</td>
+            <td><small>${item['TYPE CHARGE']}</small></td>
+            <td>${item.KAPASITAS} kW</td>
+            <td>${parseFloat(item.score).toFixed(4)}</td>
+            <td><span class="badge ${badgeClass} p-2">${item.REKOMENDASI}</span></td>
+        </tr>`;
+        tbody.innerHTML += row;
+
+        // Update Peta
+        const markerColor = item.REKOMENDASI.includes('RELOKASI') ? 'red' : 
+                            item.REKOMENDASI.includes('TAMBAH') ? 'orange' : 'green';
+        
+        const marker = L.circleMarker([item.Latitude, item.Longitude], {
+            radius: 8,
             fillColor: markerColor,
             color: "#fff",
             weight: 1,
             opacity: 1,
             fillOpacity: 0.8
-        })
-        .addTo(map)
-        .bindPopup(`
-            <strong>${row['Nama Stasiun']}</strong><br>
-            Rata-rata Transaksi: ${row.RATA2TRANSAKSI}/bln<br>
-            Skor TOPSIS: ${row.score.toFixed(4)}<br>
-            <hr>
-            <strong>Saran:</strong> ${row.REKOMENDASI}
+        }).bindPopup(`
+            <b>${displayName}</b><br>
+            Status: ${item.REKOMENDASI}<br>
+            Transaksi: ${item.RATA2TRANSAKSI}
         `);
+        markerLayer.addLayer(marker);
     });
 }
 
-function renderChart(data) {
-    const ctx = document.getElementById('chartTopsis').getContext('2d');
-    
-    // Ambil 10 teratas untuk grafik
-    const topData = data.slice(0, 10);
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: topData.map(d => d['Nama Stasiun']),
-            datasets: [{
-                label: 'Skor Prioritas Relokasi (TOPSIS)',
-                data: topData.map(d => d.score),
-                backgroundColor: '#005aab',
-                borderRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true, max: 1 }
-            }
-        }
-    });
-}
-
-function renderTable(data) {
-    const tbody = document.querySelector('#recomTable tbody');
-    tbody.innerHTML = ''; 
-
-    data.forEach(row => {
-        // Hanya tampilkan jika Nama Stasiun tidak null dan score bukan null
-        if (row['Nama Stasiun'] && row.score !== null) {
-            let badgeClass = 'badge-optimal';
-            if (row.REKOMENDASI.includes('TAMBAH')) badgeClass = 'badge-tambah';
-            if (row.REKOMENDASI.includes('RELOKASI')) badgeClass = 'badge-relokasi';
-
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${row['ID_SPKLU']}-${row['Nama Stasiun']}</strong></td>
-                <td>${row.RATA2TRANSAKSI} kali/bln</td>
-                <td>${Number(row.score).toFixed(4)}</td>
-                <td><span class="badge ${badgeClass}">${row.REKOMENDASI}</span></td>
-            `;
-            tbody.appendChild(tr);
-        }
-    });
-}
-// Jalankan dashboard saat halaman dimuat
-document.addEventListener('DOMContentLoaded', initDashboard);
+// Jalankan saat halaman siap
+document.addEventListener('DOMContentLoaded', () => {
+    initMap();
+    fetchData();
+});
