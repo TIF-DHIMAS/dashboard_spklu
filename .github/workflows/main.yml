@@ -1,0 +1,40 @@
+name: Auto Calculate AHP TOPSIS SPKLU
+
+# Mengatur kapan skrip ini berjalan
+on:
+  schedule:
+    - cron: '*/60 * * * *' # Berjalan otomatis setiap 60 menit
+  workflow_dispatch:      # Memungkinkan Anda menjalankan manual dari tombol 'Actions'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Mengambil kode terbaru dari repositori
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # 2. Menginstal Python di server GitHub
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # 3. Menginstal library yang dibutuhkan (pandas, numpy, requests)
+      - name: Install Dependencies
+        run: |
+          pip install pandas numpy requests
+
+      # 4. Menjalankan skrip Python (Otak Perhitungan)
+      - name: Run AHP TOPSIS Analysis
+        run: python main.py
+
+      # 5. Menyimpan kembali file data_spklu.json yang baru dihitung ke GitHub
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name 'GitHub Action Bot'
+          git config --global user.email 'action@github.com'
+          git add data_spklu.json
+          git commit -m "Update hasil perhitungan AHP TOPSIS otomatis" || exit 0
+          git push
