@@ -1,0 +1,26 @@
+{
+    "consistency_ratio": 0.0305,
+    "is_consistent": true,
+    "details": [
+        {
+            "kriteria": "Rata2 Transaksi",
+            "bobot": 45.96
+        },
+        {
+            "kriteria": "Populasi KBLBB",
+            "bobot": 24.62
+        },
+        {
+            "kriteria": "Kapasitas",
+            "bobot": 17.03
+        },
+        {
+            "kriteria": "Biaya Ops",
+            "bobot": 7.6
+        },
+        {
+            "kriteria": "Umur Aset",
+            "bobot": 4.78
+        }
+    ]
+}
