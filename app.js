@@ -83,23 +83,25 @@ function renderChart(data) {
 
 function renderTable(data) {
     const tbody = document.querySelector('#recomTable tbody');
-    tbody.innerHTML = ''; // Clear existing
+    tbody.innerHTML = ''; 
 
     data.forEach(row => {
-        let badgeClass = 'badge-optimal';
-        if (row.REKOMENDASI.includes('TAMBAH')) badgeClass = 'badge-tambah';
-        if (row.REKOMENDASI.includes('RELOKASI')) badgeClass = 'badge-relokasi';
+        // Hanya tampilkan jika Nama Stasiun tidak null dan score bukan null
+        if (row['Nama Stasiun'] && row.score !== null) {
+            let badgeClass = 'badge-optimal';
+            if (row.REKOMENDASI.includes('TAMBAH')) badgeClass = 'badge-tambah';
+            if (row.REKOMENDASI.includes('RELOKASI')) badgeClass = 'badge-relokasi';
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${row['Nama Stasiun']}</strong></td>
-            <td>${row.RATA2TRANSAKSI} unit/bln</td>
-            <td>${row.score.toFixed(4)}</td>
-            <td><span class="badge ${badgeClass}">${row.REKOMENDASI}</span></td>
-        `;
-        tbody.appendChild(tr);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${row['Nama Stasiun']}</strong></td>
+                <td>${row.RATA2TRANSAKSI} unit/bln</td>
+                <td>${Number(row.score).toFixed(4)}</td>
+                <td><span class="badge ${badgeClass}">${row.REKOMENDASI}</span></td>
+            `;
+            tbody.appendChild(tr);
+        }
     });
 }
-
 // Jalankan dashboard saat halaman dimuat
 document.addEventListener('DOMContentLoaded', initDashboard);
