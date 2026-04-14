@@ -1,143 +1,90 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="utf-8">
-    <title>Monitoring SPKLU PLN UID Kalbar</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <link rel="stylesheet" href="style.css">
+    <title>Dashboard SPKLU TOPSIS</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: Arial; margin: 0; }
+        .container { padding: 10px; }
+
+        .kpi {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            flex: 1;
+            padding: 10px;
+            background: #f4f4f4;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        #map { height: 400px; margin-bottom: 10px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: center;
+        }
+    </style>
 </head>
+
 <body>
 
-    <div class="navbar">
-        <b>SPKLU - PLN Kalbar</b>
-        <div class="menu">
-            <a href="#map-container">Peta Lokasi</a>
-            <a href="#evaluation-layer">Dashboard Evaluasi</a>
-        </div>
+<div class="container">
+
+    <h2>Dashboard SPKLU (AHP + TOPSIS)</h2>
+
+    <!-- KPI -->
+    <div class="kpi">
+        <div class="card">Total SPKLU<br><b id="total"></b></div>
+        <div class="card">Optimal<br><b id="optimal"></b></div>
+        <div class="card">Evaluasi<br><b id="evaluasi"></b></div>
+        <div class="card">Critical<br><b id="critical"></b></div>
     </div>
 
-    <div id="map-container">
-        <div class="panel">
-            <h3>Pencarian & Filter</h3>
-            
-            <div style="background: #fff8e1; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-size: 11px; border: 1px solid #ffe082;">
-                <strong>Analisis Relokasi:</strong><br>
-                <span style="color: #d32f2f;">● Prioritas ( < 30 Tx Kumulatif )</span><br>
-                <span style="color: #388e3c;">● Optimal ( ≥ 30 Tx Kumulatif )</span>
-            </div>
+    <!-- FILTER -->
+    <select id="filter">
+        <option value="all">Semua</option>
+        <option value="Optimal">Optimal</option>
+        <option value="Evaluasi">Evaluasi</option>
+        <option value="Critical">Critical</option>
+    </select>
 
-            <label>Nama SPKLU</label>
-            <input type="text" id="searchNama" placeholder="Ketik nama stasiun...">
-            
-            <label>Filter UP3</label>
-            <select id="mapFilterUP3"><option value="all">Semua UP3</option></select>
+    <!-- MAP -->
+    <div id="map"></div>
 
-            <label>Kabupaten / Kota</label>
-            <select id="mapFilterKota"><option value="all">Semua Kota</option></select>
+    <!-- CHART -->
+    <canvas id="chart"></canvas>
 
-            <label>Tipe Charging</label>
-            <select id="mapFilterType">
-                <option value="all">Semua Tipe</option>
-                <option value="FAST CHARGING">Fast Charging</option>
-                <option value="MEDIUM CHARGING">Medium Charging</option>
-                <option value="ULTRA FAST CHARGING">Ultra Fast Charging</option>
-                <option value="SPKLU R2">SPKLU R2</option>
-            </select>
+    <!-- TABLE -->
+    <h3>Ranking TOPSIS</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Ranking</th>
+                <th>Nama</th>
+                <th>Skor</th>
+                <th>Kategori</th>
+            </tr>
+        </thead>
+        <tbody id="table"></tbody>
+    </table>
 
-            <label>Filter Status Relokasi</label>
-            <select id="mapFilterRelocation">
-                <option value="all">Semua Status</option>
-                <option value="priority">Prioritas Relokasi</option>
-                <option value="optimal">Status Optimal</option>
-            </select>
-            
-            <div class="list" id="spkluList"></div>
-        </div>
-        <div id="map"></div>
-    </div>
+</div>
 
-    <div id="evaluation-layer">
-        <div class="container">
-            <div class="summary-grid">
-                <div class="sum-card">
-                    <span>Total Komulatif</span>
-                    <h2 id="totalValue">0</h2>
-                </div>
-                <div class="sum-card" id="cardRupiah">
-                    <span>Estimasi Pendapatan (Rp)</span>
-                    <h2 id="totalRupiah">Rp 0</h2>
-                </div>
-                <div class="sum-card" id="cardUnit">
-                    <span>Unit Terpilih</span>
-                    <h2 id="totalSPKLU">0</h2>
-                </div>
-            </div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="script.js"></script>
 
-            <div class="filter-grid">
-                <div class="filter-item">
-                    <label>Wilayah (UP3 / Kota)</label>
-                    <select id="evalFilterGeo">
-                        <option value="all">Seluruh Kalimantan Barat</option>
-                        <optgroup label="UP3" id="optUP3"></optgroup>
-                        <optgroup label="Kota / Kabupaten" id="optKota"></optgroup>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label>Pilih Tahun</label>
-                    <select id="evalFilterYear"><option value="all">Semua Tahun</option></select>
-                </div>
-                <div class="filter-item">
-                    <label>Parameter Data</label>
-                    <select id="evalFilterCategory">
-                        <option value="kwh">Konsumsi Energi (kWh)</option>
-                        <option value="tx">Jumlah Transaksi</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label>Tampilan Grafik</label>
-                    <select id="evalFilterChartType">
-                        <option value="line">Line Chart</option>
-                        <option value="bar">Bar Chart</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <label>Analisis Relokasi (Dashboard)</label>
-                    <select id="evalFilterRelocation">
-                        <option value="all">Semua Status</option>
-                        <option value="priority">Prioritas (< 30 Tx)</option>
-                        <option value="optimal">Optimal (≥ 30 Tx)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="chart-box"><canvas id="mainChart"></canvas></div>
-
-            <h3 style="margin-top: 40px;">Rincian Data Bulanan</h3>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nama Stasiun (ID)</th>
-                            <th>Unit Kerja</th>
-                            <th>Bulan</th>
-                            <th>kWh</th>
-                            <th>Transaksi</th>
-                            <th>Analisis Relokasi</th> </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-            <div class="pagination">
-                <button id="prevBtn">Sebelumnya</button>
-                <span id="pageInfo">Halaman 1</span>
-                <button id="nextBtn">Selanjutnya</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>
