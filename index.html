@@ -1,28 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Dashboard SPKLU Kalbar</title>
+    <meta charset="UTF-8">
+    <title>DSS SPKLU Kalimantan Barat</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        #map { height: 400px; width: 100%; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-family: sans-serif; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; }
+        #map { height: 500px; width: 100%; border-radius: 8px; margin-bottom: 20px; }
+        .container { display: flex; flex-direction: column; gap: 20px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
         th { background-color: #005aab; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .status-tambah { color: #d9534f; font-weight: bold; }
+        .status-aman { color: #5cb85c; }
     </style>
 </head>
 <body>
-    <h1>Monitoring & DSS Penambahan Unit SPKLU</h1>
-    <div id="map"></div>
-    <canvas id="myChart" height="100"></canvas>
-    <table id="recomTable">
-        <thead>
-            <tr><th>Nama SPKLU</th><th>Rata2 Transaksi</th><th>Skor TOPSIS</th><th>REKOMENDASI</th></tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <h1>Sistem Pendukung Keputusan Relokasi SPKLU</h1>
+    
+    <div class="container">
+        <div id="map"></div>
+        
+        <div style="width: 100%; overflow-x: auto;">
+            <canvas id="chartTopsis" height="100"></canvas>
+        </div>
+
+        <h3>Tabel Rekomendasi Strategis</h3>
+        <table id="tabelRekomendasi">
+            <thead>
+                <tr>
+                    <th>Nama SPKLU</th>
+                    <th>Rata-rata Transaksi</th>
+                    <th>Skor TOPSIS</th>
+                    <th>Rekomendasi Tindakan</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
