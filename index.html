@@ -1,109 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard SPKLU AHP-TOPSIS</title>
-
-    <!-- Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
-    <!-- Chart -->
+    <title>Dashboard SPKLU Kalbar</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- PapaParse -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-
     <style>
-        body { font-family: Arial; margin:0; background:#f5f5f5; }
-
-        #map { height: 400px; }
-
-        h2 {
-            text-align:center;
-            background:#0d47a1;
-            color:white;
-            padding:10px;
-            margin:0;
-        }
-
-        .container {
-            padding: 15px;
-        }
-
-        table {
-            width:100%;
-            border-collapse: collapse;
-            margin-top:10px;
-            background:white;
-        }
-
-        th, td {
-            border:1px solid #ddd;
-            padding:8px;
-            text-align:left;
-        }
-
-        th {
-            background:#1976d2;
-            color:white;
-        }
-
-        .card {
-            background:white;
-            padding:10px;
-            margin-bottom:15px;
-            border-radius:6px;
-            box-shadow:0 2px 6px rgba(0,0,0,0.1);
-        }
+        #map { height: 400px; width: 100%; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-family: sans-serif; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #005aab; color: white; }
     </style>
 </head>
-
 <body>
+    <h1>Monitoring & DSS Penambahan Unit SPKLU</h1>
+    <div id="map"></div>
+    <canvas id="myChart" height="100"></canvas>
+    <table id="recomTable">
+        <thead>
+            <tr><th>Nama SPKLU</th><th>Rata2 Transaksi</th><th>Skor TOPSIS</th><th>REKOMENDASI</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-<h2>Dashboard Analisis SPKLU Berbasis AHP-TOPSIS</h2>
-
-<!-- MAP -->
-<div id="map"></div>
-
-<div class="container">
-
-    <!-- CHART -->
-    <div class="card">
-        <canvas id="mainChart"></canvas>
-    </div>
-
-    <!-- REKOMENDASI -->
-    <div class="card">
-        <h3>Rekomendasi Relokasi SPKLU</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>SPKLU Penerima</th>
-                    <th>Rekomendasi Donor</th>
-                    <th>Narasi Rekomendasi</th>
-                </tr>
-            </thead>
-            <tbody id="rekomendasi"></tbody>
-        </table>
-    </div>
-
-</div>
-
-<!-- SCRIPT -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<script>
-    // ===============================
-    // GEOJSON (TETAP DIPAKAI)
-    // ===============================
-    async function loadGeoJson() {
-        const geoRes = await fetch('https://raw.githubusercontent.com/rifani/geojson-political-indonesia/master/IDN_adm_2_kabkota.json');
-        const geojsonData = await geoRes.json();
-        return geojsonData;
-    }
-</script>
-
-<!-- SCRIPT UTAMA -->
-<script src="script.js"></script>
-
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
