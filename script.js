@@ -1,314 +1,126 @@
-const URL_SPKLU = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1832472677&single=true&output=csv';
-const URL_TX = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=380492498&single=true&output=csv';
-const URL_KWH = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1097239958&single=true&output=csv';
-const URL_KBLBB = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1309571461&single=true&output=csv'
+const URL_TOPSIS = "https://raw.githubusercontent.com/USERNAME/REPO/main/data/topsis.json";
 
-const TARIF_KWH = 2467; 
+let map;
+let markersLayer = L.layerGroup();
+let topsisRaw = [];
 
-let map, markers = [], currentChart = null, legendControl = null;
-let db = { spklu_data: [], up3_list: [], kota_list: [], date_list: [] };
-let dataStatistik = {}; // Untuk menyimpan data JML_KBLBB per Kabupaten/Kota
-let filteredTableData = [], currentPage = 1, rowsPerPage = 10;
-
-// 2. FUNGSI PEMBANTU (UTILITY)
-function getColor(d) {
-    return d > 80  ? '#006400' :
-           d > 40  ? '#228B22' :
-           d > 25  ? '#FFA500' :
-           d > 5   ? '#FF4500' :
-                     '#8B0000';
+async function fetchTopsis() {
+    const res = await fetch(URL_TOPSIS);
+    topsisRaw = await res.json();
 }
 
-function cleanName(name) {
-    if (!name) return "";
-    return name.toUpperCase()
-               .replace(/KOTA|KABUPATEN|KAB\./g, "")
-               .trim();
-}
+// ================= MAP =================
+function initMap() {
+    map = L.map('map').setView([-0.02, 109.34], 12);
 
-// 3. PENGAMBILAN DATA (FETCHING)
-async function fetchData() {
-    const fetchCsv = (url) => new Promise((res, rej) => Papa.parse(url, { download: true, header: true, skipEmptyLines: 'greedy', complete: (r) => res(r.data), error: rej }));
-    try {
-        const [s, t, k, kblbb] = await Promise.all([
-            fetchCsv(URL_SPKLU), 
-            fetchCsv(URL_TX), 
-            fetchCsv(URL_KWH),
-            fetchCsv(URL_KBLBB)
-        ]);
-
-        // Mengambil GeoJSON dari sumber eksternal
-        const geoRes = await fetch('https://raw.githubusercontent.com/rifani/geojson-political-indonesia/master/IDN_adm_2_kabkota.json');
-        const geojsonData = await geoRes.json();
-
-        // Proses data statistik KBLBB ke dalam objek global
-        kblbb.forEach(row => {
-            if(row["KOTA"]) {
-                const key = cleanName(row["KOTA"]);
-                dataStatistik[key] = parseInt(row["JML_KBLBB"]) || 0;
-            }
-        });
-
-        processData(s, t, k);
-        updateYearFilter();
-        initApp(geojsonData);
-    } catch (e) { console.error("Data Load Error:", e); }
-}
-
-function processData(spklu, tx, kwh) {
-    db.date_list = Object.keys(tx[0]).filter(key => !['UP3', 'ULP', 'ID_SPKLU', 'Nama Stasiun'].includes(key));
-    const kSet = new Set(), uSet = new Set();
-    
-    db.spklu_data = spklu.filter(r => r['Nama Stasiun']).map(r => {
-        const id = r['ID_SPKLU'];
-        if(r.Kota) kSet.add(r.Kota.trim());
-        if(r.UP3) uSet.add(r.UP3.trim());
-        return {
-            ...r, nama: r['Nama Stasiun'].trim(), lat: parseFloat(r.Latitude), lon: parseFloat(r.Longitude),
-            tx: tx.find(i => i['ID_SPKLU'] === id) || {},
-            kwh: kwh.find(i => i['ID_SPKLU'] === id) || {}
-        };
-    });
-    db.up3_list = [...uSet].sort(); db.kota_list = [...kSet].sort();
-}
-
-function getRelocationIcon(totalTx) {
-    const color = (totalTx < 30) ? 'red' : 'green';
-    return L.icon({
-        iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
-}
-
-// 4. INISIALISASI APLIKASI DAN PETA
-function initApp(geojsonData) {
-    if (map) map.remove();
-    map = L.map('map', { zoomControl: false }).setView([-0.03, 109.33], 7);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-    // Render Choropleth Wilayah Terlebih Dahulu (Lapisan Bawah)
-    renderGeoJson(geojsonData);
-
-    // Render Marker SPKLU (Lapisan Atas)
-    db.spklu_data.forEach(d => {
-        if (!isNaN(d.lat)) {
-            const totKwh = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.kwh[bln]?.toString().replace(',','.')) || 0), 0);
-            const totTx = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.tx[bln]?.toString().replace(',','.')) || 0), 0);
-            
-            const m = L.marker([d.lat, d.lon], { icon: getRelocationIcon(totTx) }).addTo(map)
-                .bindPopup(`
-                    <div style="min-width:200px">
-                        <b style="color:#1e88e5;">${d.nama}</b><br><small>ID: ${d.ID_SPKLU}</small><hr>
-                        <table style="width:100%; font-size:11px;">
-                            <tr><td><b>Alamat</b></td><td>: ${d.Alamat || '-'}</td></tr>
-                            <tr><td>Tipe/Daya</td><td>: ${d['TYPE CHARGE']} / ${d['KW']} KW</td></tr>
-                            <tr><td>Merk</td><td>: ${d['MERK']}</td></tr>
-                            <tr><td>Kwh Total</td><td>: ${totKwh.toLocaleString('id-ID')}</td></tr>
-                            <tr><td>Tx Total</td><td>: ${totTx.toLocaleString('id-ID')}</td></tr>
-                            <tr><td>Status</td><td>: ${totTx < 30 ? '<b style="color:red;">PRIORITAS RELOKASI</b>' : '<b style="color:green;">OPTIMAL</b>'}</td></tr>
-                        </table>
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lon}" target="_blank" class="btn-rute" style="display:block; text-align:center; background:#1e88e5; color:white; padding:5px; margin-top:10px; border-radius:4px; text-decoration:none;">📍 Navigasi</a>
-                    </div>
-                `);
-            m.data = d; markers.push(m);
-        }
-    });
-
-    // Setup UI Filters
-    const mU = document.getElementById('mapFilterUP3'), mK = document.getElementById('mapFilterKota'), oU = document.getElementById('optUP3'), oK = document.getElementById('optKota');
-    mU.innerHTML = '<option value="all">Semua UP3</option>'; mK.innerHTML = '<option value="all">Semua Kota</option>';
-    db.up3_list.forEach(u => { mU.add(new Option(u, u)); oU.appendChild(new Option("UP3 " + u, u)); });
-    db.kota_list.forEach(k => { mK.add(new Option(k, k)); oK.appendChild(new Option(k, k)); });
-
-    setupEvents(); updateDashboard(); applyMapFilter();
-}
-
-// 5. RENDER GEODATA (CHOROPLETH)
-function renderGeoJson(geojsonData) {
-    const kalbarShapes = geojsonData.features.filter(f => 
-        f.properties.NAME_1 === "Kalimantan Barat"
-    );
-
-    L.geoJson(kalbarShapes, {
-        style: function(feature) {
-            const namaGeo = cleanName(feature.properties.NAME_2);
-            const nilai = dataStatistik[namaGeo] || 0;
-            return { 
-                fillColor: getColor(nilai), 
-                weight: 1.5, 
-                color: 'white', 
-                fillOpacity: 0.6 
-            };
-        },
-        onEachFeature: function(feature, layer) {
-            const nama = feature.properties.NAME_2;
-            const jml = dataStatistik[cleanName(nama)] || 0;
-            layer.bindPopup(`<b>Wilayah: ${nama}</b><br>Populasi Kendaraan (KBLBB): ${jml} Unit`);
-        }
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
     }).addTo(map);
+
+    markersLayer.addTo(map);
 }
 
-// 6. LOGIKA DASHBOARD DAN FILTER
-function setupEvents() {
-    ['searchNama', 'mapFilterUP3', 'mapFilterKota', 'mapFilterType', 'mapFilterRelocation'].forEach(id => {
-        document.getElementById(id).addEventListener('input', applyMapFilter);
-    });
-    ['evalFilterGeo', 'evalFilterCategory', 'evalFilterChartType', 'evalFilterYear', 'evalFilterRelocation'].forEach(id => {
-        document.getElementById(id).addEventListener('change', updateDashboard);
-    });
-    document.getElementById('prevBtn').onclick = () => { if(currentPage > 1) { currentPage--; renderTable(); } };
-    document.getElementById('nextBtn').onclick = () => { if(currentPage * rowsPerPage < filteredTableData.length) { currentPage++; renderTable(); } };
+// dummy koordinat
+function getCoord(nama) {
+    return [-0.02 + Math.random()/10, 109.34 + Math.random()/10];
 }
 
-function updateYearFilter() {
-    const years = new Set();
-    db.date_list.forEach(d => { if(d.includes('-')) years.add("20" + d.split('-')[1]); });
-    const sel = document.getElementById('evalFilterYear');
-    sel.innerHTML = '<option value="all">Semua Tahun</option>';
-    Array.from(years).sort().reverse().forEach(y => sel.add(new Option(y, y)));
+function getColor(kat) {
+    if (kat === "Optimal") return "green";
+    if (kat === "Evaluasi") return "orange";
+    return "red";
 }
 
-function applyMapFilter() {
-    const s = document.getElementById('searchNama').value.toLowerCase(), 
-          u = document.getElementById('mapFilterUP3').value, 
-          k = document.getElementById('mapFilterKota').value, 
-          t = document.getElementById('mapFilterType').value,
-          r = document.getElementById('mapFilterRelocation').value,
-          list = document.getElementById('spkluList');
-    
-    list.innerHTML = '';
-    let stats = { total: 0, relocation: 0, optimal: 0 };
+function renderMap(filter="all") {
+    markersLayer.clearLayers();
 
-    markers.forEach(m => {
-        const d = m.data;
-        const totTx = db.date_list.reduce((acc, bln) => acc + (parseFloat(d.tx[bln]?.toString().replace(',','.')) || 0), 0);
-        
-        const isPriority = totTx < 30;
-        const matchRelocation = (r === 'all') || (r === 'priority' && isPriority) || (r === 'optimal' && !isPriority);
-        const matchSearch = d.nama.toLowerCase().includes(s) && (u === 'all' || d.UP3 === u) && (k === 'all' || d.Kota === k) && (t === 'all' || d['TYPE CHARGE'] === t);
+    topsisRaw.forEach(d => {
+        if(filter !== "all" && d.kategori !== filter) return;
 
-        if(matchSearch && matchRelocation) {
-            m.addTo(map);
-            stats.total++;
-            if(isPriority) stats.relocation++; else stats.optimal++;
+        const coord = getCoord(d.nama);
 
-            const div = document.createElement('div'); 
-            div.className = 'list-item'; 
-            div.style.borderLeft = isPriority ? '4px solid red' : '4px solid green';
-            div.innerHTML = `<b>${d.nama}</b><small>${d.UP3} | ${totTx} Tx</small>`;
-            div.onclick = () => { map.setView([d.lat, d.lon], 15); m.openPopup(); }; 
-            list.appendChild(div);
-        } else map.removeLayer(m);
-    });
-    updateLegend(stats);
-}
-
-function updateLegend(stats) {
-    if (legendControl) map.removeControl(legendControl);
-    legendControl = L.control({ position: 'bottomright' });
-
-    legendControl.onAdd = () => {
-        const div = L.DomUtil.create('div', 'legend-container');
-        
-        div.innerHTML = `
-            <div class="legend-pane">
-                <b>Ringkasan Analisis</b><hr>
-                <div class="legend-item"><i style="background: #43a047; border-radius: 50%;"></i> Optimal: ${stats.optimal}</div>
-                <div class="legend-item"><i style="background: #d32f2f; border-radius: 50%;"></i> Prioritas: ${stats.relocation}</div>
-                <div style="margin-top:5px; font-weight:bold; font-size:10px;">TOTAL UNIT: ${stats.total}</div>
-            </div>
-            
-            <div class="legend-pane">
-                <b>Populasi KBLBB</b><hr>
-                <div class="legend-item"><i style="background: #006400"></i> > 80 Unit</div>
-                <div class="legend-item"><i style="background: #228B22"></i> 41 - 80 Unit</div>
-                <div class="legend-item"><i style="background: #FFA500"></i> 26 - 40 Unit</div>
-                <div class="legend-item"><i style="background: #FF4500"></i> 6 - 25 Unit</div>
-                <div class="legend-item"><i style="background: #8B0000"></i> 0 - 5 Unit</div>
-            </div>
-        `;
-        return div;
-    };
-    legendControl.addTo(map);
-}
-
-function updateDashboard() {
-    const geo = document.getElementById('evalFilterGeo').value;
-    const cat = document.getElementById('evalFilterCategory').value;
-    const type = document.getElementById('evalFilterChartType').value;
-    const year = document.getElementById('evalFilterYear').value;
-    const relocationFilter = document.getElementById('evalFilterRelocation').value;
-
-    let dates = db.date_list;
-    if (year !== 'all') dates = dates.filter(d => d.includes("-" + year.substring(2)));
-    
-    const stations = db.spklu_data.filter(s => {
-        const matchGeo = (geo === 'all' || s.UP3 === geo || s.Kota === geo);
-        const totalTxStat = db.date_list.reduce((acc, bln) => acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
-        let matchRelocation = true;
-        if (relocationFilter === 'priority') matchRelocation = (totalTxStat < 30);
-        if (relocationFilter === 'optimal') matchRelocation = (totalTxStat >= 30);
-        return matchGeo && matchRelocation;
-    });
-
-    dates = dates.filter(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',', '.')) || 0), 0) > 0);
-    const vals = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s[cat][d]?.toString().replace(',', '.')) || 0), 0));
-    const totalKwh = dates.map(d => stations.reduce((acc, s) => acc + (parseFloat(s['kwh'][d]?.toString().replace(',', '.')) || 0), 0)).reduce((a, b) => a + b, 0);
-
-    document.getElementById('totalValue').innerText = vals.reduce((a, b) => a + b, 0).toLocaleString('id-ID') + (cat === 'kwh' ? ' kWh' : ' Tx');
-    document.getElementById('totalRupiah').innerText = "Rp " + (totalKwh * TARIF_KWH).toLocaleString('id-ID');
-    document.getElementById('totalSPKLU').innerText = stations.length;
-
-    renderChart(type, dates, vals, cat.toUpperCase());
-
-    filteredTableData = [];
-    stations.forEach(s => {
-        const totalTxStat = db.date_list.reduce((acc, bln) => acc + (parseFloat(s.tx[bln]?.toString().replace(',', '.')) || 0), 0);
-        const statusRelokasi = totalTxStat < 30 ? '<span style="color:red; font-weight:bold;">Prioritas Relokasi</span>' : '<span style="color:green;">Optimal</span>';
-
-        dates.forEach(d => { 
-            const v = parseFloat(s[cat][d]?.toString().replace(',', '.'));
-            if (v > 0) {
-                filteredTableData.push({ 
-                    n: s.nama, id: s.ID_SPKLU, u: s.UP3, b: d, k: s.kwh[d] || 0, t: s.tx[d] || 0,
-                    analysis: statusRelokasi
-                }); 
-            }
+        const marker = L.circleMarker(coord, {
+            radius: 8,
+            color: getColor(d.kategori)
         });
-    });
 
-    filteredTableData.sort((a, b) => b.b.localeCompare(a.b));
-    currentPage = 1; renderTable();
+        marker.bindPopup(`
+            <b>${d.nama}</b><br>
+            Skor: ${d.skor}<br>
+            Kategori: ${d.kategori}
+        `);
+
+        markersLayer.addLayer(marker);
+    });
 }
 
-function renderChart(type, labels, data, label) {
-    if (currentChart) currentChart.destroy();
-    const isLine = type === 'line';
-    currentChart = new Chart(document.getElementById('mainChart'), {
-        type: type,
+// ================= KPI =================
+function renderKPI() {
+    document.getElementById("total").innerText = topsisRaw.length;
+
+    document.getElementById("optimal").innerText =
+        topsisRaw.filter(d => d.kategori === "Optimal").length;
+
+    document.getElementById("evaluasi").innerText =
+        topsisRaw.filter(d => d.kategori === "Evaluasi").length;
+
+    document.getElementById("critical").innerText =
+        topsisRaw.filter(d => d.kategori === "Critical").length;
+}
+
+// ================= CHART =================
+function renderChart() {
+    const labels = topsisRaw.map(d => d.nama);
+    const data = topsisRaw.map(d => d.skor);
+
+    new Chart(document.getElementById("chart"), {
+        type: 'bar',
         data: {
-            labels, datasets: [{
-                label, data, backgroundColor: isLine ? 'rgba(0, 162, 233, 0.2)' : '#1e88e5', borderColor: '#1e88e5', fill: isLine, tension: 0.3
+            labels: labels,
+            datasets: [{
+                label: 'Skor TOPSIS',
+                data: data
             }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
+        }
     });
 }
 
+// ================= TABLE =================
 function renderTable() {
-    const start = (currentPage - 1) * rowsPerPage;
-    const pageData = filteredTableData.slice(start, start + rowsPerPage);
-    document.getElementById('tableBody').innerHTML = pageData.map(r => `
-        <tr>
-            <td>${r.n} (${r.id})</td><td>${r.u}</td><td>${r.b}</td><td>${r.k}</td><td>${r.t}</td><td>${r.analysis}</td>
-        </tr>`).join('');
-    document.getElementById('pageInfo').innerText = `Hal ${currentPage} dari ${Math.ceil(filteredTableData.length/rowsPerPage) || 1}`;
+    let html = "";
+
+    topsisRaw
+        .sort((a,b)=>b.skor-a.skor)
+        .forEach((d,i)=>{
+            html += `
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${d.nama}</td>
+                    <td>${d.skor}</td>
+                    <td>${d.kategori}</td>
+                </tr>
+            `;
+        });
+
+    document.getElementById("table").innerHTML = html;
 }
 
-// JALANKAN PROSES
-fetchData();
+// ================= FILTER =================
+function setupFilter() {
+    document.getElementById("filter").addEventListener("change", (e)=>{
+        renderMap(e.target.value);
+    });
+}
+
+// ================= INIT =================
+async function init() {
+    await fetchTopsis();
+    initMap();
+    renderMap();
+    renderKPI();
+    renderChart();
+    renderTable();
+    setupFilter();
+}
+
+init();
