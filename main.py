@@ -103,8 +103,8 @@ def main():
     donor_pool = df[df['score'] < df['score'].median()]['Nama Stasiun'].tolist()
     
     def tentukan_rekomendasi(row):
-        # Jika transaksi tinggi (misal > 50), perlu tambah unit
-        if row['RATA2TRANSAKSI'] >= 50:
+        # Jika transaksi tinggi (misal > 30), perlu tambah unit
+        if row['RATA2TRANSAKSI'] >= 30:
             donor = donor_pool.pop() if donor_pool else "Unit Baru"
             return f"TAMBAH UNIT (Pindahkan mesin dari {donor})"
         # Jika skor kelayakan sangat rendah (misal < 0.2), kandidat relokasi
