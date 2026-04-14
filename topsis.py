@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import json
 import os
+import datetime
 
 print("=== PROSES TOPSIS SPKLU ===")
 
@@ -77,15 +78,8 @@ print("\n=== HASIL RANKING ===")
 print(df[['NAMA','Skor','Ranking','Kategori']])
 
 # ======================
-# EXPORT JSON
-# ======================
-import datetime
-
-# ======================
 # EXPORT JSON (FINAL)
 # ======================
-import datetime
-
 topsis_json = {
     "update_time": str(datetime.datetime.now()),
     "data": []
@@ -110,7 +104,7 @@ print("\n✅ JSON berhasil dibuat: data/topsis.json")
 # AUTO PUSH GITHUB
 # ======================
 try:
-    repo_path = r"C:\Users\dhimas.wahyu\SPKLU_PROJECT"  # GANTI SESUAI
+    repo_path = r"D:\SPKLU DHIMAS KULIAH\dashboard_spklu"  # SESUAIKAN
 
     os.chdir(repo_path)
 
