@@ -1,4 +1,4 @@
-const URLOLAH = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1309571461&single=true&output=csv';
+const URLOLAH = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=312487335&single=true&output=csv'
 
 // 1. Parameter AHP (Matriks Perbandingan Berpasangan)
 // Urutan: [Rata2Trans, KBLBB, Kapasitas, Biaya, Umur]
