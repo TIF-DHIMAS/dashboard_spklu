@@ -1,89 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard SPKLU TOPSIS</title>
+    <title>Dashboard SPKLU AHP-TOPSIS</title>
 
+    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <!-- Chart -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- PapaParse -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+
     <style>
-        body { font-family: Arial; margin: 0; }
-        .container { padding: 10px; }
+        body { font-family: Arial; margin:0; background:#f5f5f5; }
 
-        .kpi {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+        #map { height: 400px; }
+
+        h2 {
+            text-align:center;
+            background:#0d47a1;
+            color:white;
+            padding:10px;
+            margin:0;
         }
 
-        .card {
-            flex: 1;
-            padding: 10px;
-            background: #f4f4f4;
-            border-radius: 8px;
-            text-align: center;
+        .container {
+            padding: 15px;
         }
-
-        #map { height: 400px; margin-bottom: 10px; }
 
         table {
-            width: 100%;
+            width:100%;
             border-collapse: collapse;
+            margin-top:10px;
+            background:white;
         }
 
         th, td {
-            border: 1px solid #ddd;
-            padding: 6px;
-            text-align: center;
+            border:1px solid #ddd;
+            padding:8px;
+            text-align:left;
+        }
+
+        th {
+            background:#1976d2;
+            color:white;
+        }
+
+        .card {
+            background:white;
+            padding:10px;
+            margin-bottom:15px;
+            border-radius:6px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 
 <body>
 
+<h2>Dashboard Analisis SPKLU Berbasis AHP-TOPSIS</h2>
+
+<!-- MAP -->
+<div id="map"></div>
+
 <div class="container">
 
-    <h2>Dashboard SPKLU (AHP + TOPSIS)</h2>
-
-    <!-- KPI -->
-    <div class="kpi">
-        <div class="card">Total SPKLU<br><b id="total"></b></div>
-        <div class="card">Optimal<br><b id="optimal"></b></div>
-        <div class="card">Evaluasi<br><b id="evaluasi"></b></div>
-        <div class="card">Critical<br><b id="critical"></b></div>
+    <!-- CHART -->
+    <div class="card">
+        <canvas id="mainChart"></canvas>
     </div>
 
-    <!-- FILTER -->
-    <select id="filter">
-        <option value="all">Semua</option>
-        <option value="Optimal">Optimal</option>
-        <option value="Evaluasi">Evaluasi</option>
-        <option value="Critical">Critical</option>
-    </select>
-
-    <!-- MAP -->
-    <div id="map"></div>
-
-    <!-- CHART -->
-    <canvas id="chart"></canvas>
-
-    <!-- TABLE -->
-    <h3>Ranking TOPSIS</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Ranking</th>
-                <th>Nama</th>
-                <th>Skor</th>
-                <th>Kategori</th>
-            </tr>
-        </thead>
-        <tbody id="table"></tbody>
-    </table>
+    <!-- REKOMENDASI -->
+    <div class="card">
+        <h3>Rekomendasi Relokasi SPKLU</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>SPKLU Penerima</th>
+                    <th>Rekomendasi Donor</th>
+                    <th>Narasi Rekomendasi</th>
+                </tr>
+            </thead>
+            <tbody id="rekomendasi"></tbody>
+        </table>
+    </div>
 
 </div>
 
+<!-- SCRIPT -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    // ===============================
+    // GEOJSON (TETAP DIPAKAI)
+    // ===============================
+    async function loadGeoJson() {
+        const geoRes = await fetch('https://raw.githubusercontent.com/rifani/geojson-political-indonesia/master/IDN_adm_2_kabkota.json');
+        const geojsonData = await geoRes.json();
+        return geojsonData;
+    }
+</script>
+
+<!-- SCRIPT UTAMA -->
 <script src="script.js"></script>
 
 </body>
