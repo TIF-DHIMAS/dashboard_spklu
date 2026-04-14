@@ -88,7 +88,7 @@ function applyFilters() {
     const fStatus = document.getElementById('filterStatus').value;
 
     const filtered = rawData.filter(item => {
-        const matchUP3 = (fUP3 === 'ALL' || item.ULP === fUP3);
+        const matchUP3 = (fUP3 === 'ALL' || item.UP3 === fUP3);
         const matchType = (fType === 'ALL' || item['TYPE CHARGE'] === fType);
         const matchCap = (fCap === 'ALL' || item.KAPASITAS.toString() === fCap);
         const matchStatus = (fStatus === 'ALL' || item.REKOMENDASI.toUpperCase().includes(fStatus.toUpperCase()));
