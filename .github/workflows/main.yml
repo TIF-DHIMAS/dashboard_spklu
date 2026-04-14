@@ -3,7 +3,7 @@ name: Auto Calculate AHP TOPSIS SPKLU
 # Mengatur kapan skrip ini berjalan
 on:
   schedule:
-    - cron: '*/60 * * * *' # Berjalan otomatis setiap 60 menit
+    - cron: '*/30 * * * *' # Berjalan otomatis setiap 60 menit
   workflow_dispatch:      # Memungkinkan Anda menjalankan manual dari tombol 'Actions'
 
 jobs:
