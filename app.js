@@ -45,7 +45,7 @@ function applyFilters() {
     const fStatus = document.getElementById('filterStatus').value;
 
     const filtered = rawData.filter(item => {
-        return (fUP3 === 'ALL' || item.UP3 === fUP3) &&
+        return (fUP3 === 'ALL' || item.ULP === fUP3) &&
                (fType === 'ALL' || item['TYPE CHARGE'] === fType) &&
                (fCap === 'ALL' || item.KAPASITAS.toString() === fCap) &&
                (fStatus === 'ALL' || item.REKOMENDASI.toUpperCase().includes(fStatus.toUpperCase()));
