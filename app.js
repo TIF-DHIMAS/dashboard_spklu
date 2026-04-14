@@ -34,23 +34,34 @@ async function fetchData() {
 // 3. Render Tabel Bobot AHP secara Dinamis
 function renderAHPTable(data) {
     const ahpBody = document.getElementById('ahpWeightBody');
+    const ahpFooter = document.getElementById('ahpFooter'); // Ambil elemen footer
+    
     if (!ahpBody || !data) return;
 
-    // Helper untuk mencari bobot berdasarkan nama kriteria dari JSON
+    // 1. Render isi tabel (seperti sebelumnya)
     const getWeight = (key) => {
         const found = data.details.find(d => d.kriteria.toLowerCase().includes(key.toLowerCase()));
         return found ? `${found.bobot}%` : '-';
     };
 
-    // Urutan kolom sesuai HTML Anda: Kapasitas, Biaya, Populasi, Transaksi, Umur
     ahpBody.innerHTML = `
         <tr class="fw-bold text-primary">
-            <td>${getWeight('Kapasitas')}</td>
-            <td>${getWeight('Biaya')}</td>
-            <td>${getWeight('KBLBB')}</td>
-            <td>${getWeight('Rata2')}</td>
-            <td>${getWeight('Umur')}</td>
+            <td>${getWeight('Rata2 Kali Transaksi')}</td>
+            <td>${getWeight('Pengguna EV Per Kota/Kab')}</td>
+            <td>${getWeight('Kapasitas Daya Mesin')}</td>
+            <td>${getWeight('Biaya Relokasi')}</td>
+            <td>${getWeight('Umur SPKLU')}</td>
         </tr>`;
+
+    // 2. Update Footer dengan Angka Konsistensi
+    if (ahpFooter) {
+        const crValue = data.consistency_ratio;
+        const statusText = data.is_consistent ? 
+            '<span class="text-success">(Konsisten)</span>' : 
+            '<span class="text-danger">(Tidak Konsisten - Perlu Evaluasi Matriks)</span>';
+
+        ahpFooter.innerHTML = `* Bobot ini hasil perhitungan AHP dengan <strong>Consistency Ratio (CR): ${crValue}</strong> ${statusText}.`;
+    }
 }
 
 // 4. Mengisi Dropdown Kapasitas secara Dinamis
