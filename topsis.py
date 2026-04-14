@@ -79,10 +79,20 @@ print(df[['NAMA','Skor','Ranking','Kategori']])
 # ======================
 # EXPORT JSON
 # ======================
-topsis_json = []
+import datetime
+
+# ======================
+# EXPORT JSON (FINAL)
+# ======================
+import datetime
+
+topsis_json = {
+    "update_time": str(datetime.datetime.now()),
+    "data": []
+}
 
 for _, row in df.iterrows():
-    topsis_json.append({
+    topsis_json["data"].append({
         "nama": row["NAMA"],
         "skor": float(row["Skor"]),
         "kategori": str(row["Kategori"])
