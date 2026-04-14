@@ -10,8 +10,43 @@ function initMap() {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
     markerLayer.addTo(map);
+    // Panggil legenda di sini
+    addLegend(map);
 }
+function addLegend(map) {
+    const legend = L.control({ position: 'bottomright' });
 
+    legend.onAdd = function () {
+        const div = L.DomUtil.create('div', 'info legend');
+        const labels = [
+            { color: '#1e7e34', text: 'Optimal' },
+            { color: '#f57f17', text: 'Tambah Unit' },
+            { color: '#d93025', text: 'Kandidat Relokasi' }
+        ];
+
+        div.style.backgroundColor = 'white';
+        div.style.padding = '10px';
+        div.style.border = '1px solid #ccc';
+        div.style.borderRadius = '5px';
+        div.style.lineHeight = '1.5em';
+        div.style.boxShadow = '0 0 15px rgba(0,0,0,0.2)';
+
+        div.innerHTML = '<h6 style="margin-bottom: 8px; font-weight: bold; font-size: 12px;">Status Rekomendasi</h6>';
+
+        labels.forEach(item => {
+            div.innerHTML += `
+                <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                    <i style="background: ${item.color}; width: 14px; height: 14px; border-radius: 50%; display: inline-block; margin-right: 8px; border: 1px solid #fff;"></i>
+                    <span style="font-size: 11px;">${item.text}</span>
+                </div>
+            `;
+        });
+
+        return div;
+    };
+
+    legend.addTo(map);
+}
 // 2. Load Data dari JSON (Data Utama & Data AHP)
 async function fetchData() {
     try {
