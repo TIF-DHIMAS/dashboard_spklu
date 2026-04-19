@@ -106,21 +106,52 @@ def main():
 
         df['SCORE'] = (score - score.min()) / (score.max() - score.min() + 1e-9)
 
-        # ======================
-        # 4. REKOMENDASI
-        # ======================
-        def rekom(row):
-            if row['RATA2TRANSAKSI'] >= 30:
-                return "TAMBAH UNIT"
-            elif row['SCORE'] < 0.3:
-                return "RELOKASI"
-            else:
-                return "OPTIMAL"
+       # ======================
+# 4. REKOMENDASI
+# ======================
+def rekom(row):
+    if row['RATA2TRANSAKSI'] >= 30:
+        return "TAMBAH UNIT"
+    elif row['SCORE'] < 0.3:
+        return "POTENSI RELOKASI"
+    else:
+        return "OPTIMAL"
 
-        df['REKOMENDASI'] = df.apply(rekom, axis=1)
+df['REKOMENDASI'] = df.apply(rekom, axis=1)
 
-        df = df.sort_values(by='SCORE', ascending=False)
+# ======================
+# 4B. MATCHING DONOR - PENERIMA
+# ======================
+penerima = df[df['REKOMENDASI'] == 'TAMBAH UNIT'].copy()
+donor = df[df['REKOMENDASI'] == 'POTENSI RELOKASI'].copy()
 
+df['REKOMENDASI_DETAIL'] = df['REKOMENDASI']
+
+for i, rec in penerima.iterrows():
+    if donor.empty:
+        break
+
+    # cari donor dengan kapasitas paling mendekati
+    donor['SELISIH'] = abs(donor['KAPASITAS'] - rec['KAPASITAS'])
+    best = donor.sort_values('SELISIH').iloc[0]
+
+    donor_name = best.get('Nama Stasiun', 'Unknown')
+    donor_id = best.get('ID_SPKLU', '')
+    donor_cap = best.get('KAPASITAS', 0)
+
+    # update penerima
+    df.loc[i, 'REKOMENDASI_DETAIL'] = (
+        f"TAMBAH UNIT (Dari: {donor_id} - {donor_name}, {donor_cap} kW)"
+    )
+
+    # update donor
+    df.loc[best.name, 'REKOMENDASI_DETAIL'] = (
+        f"POTENSI RELOKASI (Ke: {rec.get('ID_SPKLU')} - {rec.get('Nama Stasiun')})"
+    )
+
+    # hapus donor agar tidak dipakai lagi
+    donor = donor.drop(best.name)
+    
         # ======================
         # 5. OUTPUT JSON
         # ======================
