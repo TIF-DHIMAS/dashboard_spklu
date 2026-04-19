@@ -1,38 +1,42 @@
 name: Auto Calculate AHP TOPSIS SPKLU
 
-on:
-  schedule:
-    - cron: '*/30 * * * *'  # Berjalan setiap 30 menit
-  workflow_dispatch:        # Bisa dijalankan manual
-
 permissions:
-  contents: write           # Izin wajib untuk push file ke repo
+  contents: write
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Memaksa penggunaan Node.js 24 sesuai saran peringatan
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        # Menggunakan versi v4 terbaru
+        uses: actions/checkout@v4 
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Setup Python
+        # Menggunakan versi v5 terbaru yang mendukung Node 24
+        uses: actions/setup-python@v5 
         with:
-          python-version: '3.9'
+          python-version: '3.11' # Upgrade ke 3.11 untuk performa lebih baik
 
       - name: Install Dependencies
-        run: |
-          pip install pandas numpy requests
+        run: pip install pandas numpy requests
 
       - name: Run AHP TOPSIS Analysis
         run: python main.py
 
       - name: Commit and Push Changes
         run: |
-          git config --global user.name 'GitHub Action Bot'
-          git config --global user.email 'action@github.com'
-          # Menambahkan file hasil di root directory
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          # Add file di root directory agar sinkron dengan app.js
           git add data_spklu.json ahp_results.json
-          git commit -m "Update hasil perhitungan AHP TOPSIS otomatis" || exit 0
+          git commit -m "Update SPKLU Data (Node 24 Ready)" || exit 0
           git push
