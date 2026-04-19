@@ -29,7 +29,7 @@ function addLegend(map) {
         const labels = [
             { color: '#1e7e34', text: 'Optimal' },
             { color: '#f57f17', text: 'Tambah Unit' },
-            { color: '#d93025', text: 'Relokasi' }
+            { color: '#d93025', text: 'Potensi Relokasi' }
         ];
 
         div.style = `
@@ -180,7 +180,7 @@ function renderDashboard(data) {
 
         // badge warna
         let badge = 'bg-success';
-        if (item.REKOMENDASI.includes('RELOKASI')) badge = 'bg-danger';
+        if (item.REKOMENDASI.includes('POTENSI RELOKASI')) badge = 'bg-danger';
         if (item.REKOMENDASI.includes('TAMBAH')) badge = 'bg-warning text-dark';
 
         // TABLE
@@ -191,7 +191,7 @@ function renderDashboard(data) {
                 <td>${item['TYPE CHARGE'] || '-'}</td>
                 <td class="text-center">${item.KAPASITAS || 0}</td>
                 <td class="text-center text-primary fw-bold">${score}</td>
-                <td><span class="badge ${badge}">${item.REKOMENDASI}</span></td>
+                <td><span class="badge ${badge}">${item.REKOMENDASI_DETAIL || item.REKOMENDASI}</span></td>
             </tr>
         `;
 
@@ -218,7 +218,7 @@ function renderDashboard(data) {
                 Kapasitas: ${item.KAPASITAS} kW<br>
                 Umur: ${item.UMUR}<br>
                 Skor: ${score}<br>
-                <b>${item.REKOMENDASI}</b>
+                <b>${item.REKOMENDASI_DETAIL || item.REKOMENDASI}</b>
             `);
 
             markerLayer.addLayer(marker);
