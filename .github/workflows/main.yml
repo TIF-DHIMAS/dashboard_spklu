@@ -11,20 +11,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # Memaksa penggunaan Node.js 24 sesuai saran peringatan
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true 
 
     steps:
       - name: Checkout Repository
-        # Menggunakan versi v4 terbaru
-        uses: actions/checkout@v4 
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # penting supaya bisa pull/rebase
 
       - name: Setup Python
-        # Menggunakan versi v5 terbaru yang mendukung Node 24
-        uses: actions/setup-python@v5 
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11' # Upgrade ke 3.11 untuk performa lebih baik
+          python-version: '3.11'
 
       - name: Install Dependencies
         run: pip install pandas numpy requests
@@ -36,9 +33,12 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
+
           git add data_spklu.json ahp_results.json
-          git commit -m "Update SPKLU Data" || echo "No changes"
-          
+          git commit -m "Auto update SPKLU data" || echo "No changes to commit"
+
+          # ambil update terbaru dari repo (hindari conflict)
           git pull origin main --rebase
+
+          # push kembali
           git push origin main
