@@ -219,7 +219,8 @@ function renderDashboard(data) {
                 Kapasitas: ${item.KAPASITAS} kW<br>
                 Umur: ${item.UMUR}<br>
                 Skor: ${score}<br>
-                <b>${item.REKOMENDASI_DETAIL || item.REKOMENDASI}</b>
+                <b>${item.REKOMENDASI_DETAIL || item.REKOMENDASI}</b><br>
+                ${item.PENGGANTI_LOKASI ? item.PENGGANTI_LOKASI : ''}
             `);
 
             markerLayer.addLayer(marker);
