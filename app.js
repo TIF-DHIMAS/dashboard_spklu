@@ -29,7 +29,7 @@ function addLegend(map) {
         const labels = [
             { color: '#1e7e34', text: 'Optimal' },
             { color: '#f57f17', text: 'Tambah Unit' },
-            { color: '#d93025', text: 'Relokasi' }
+            { color: '#d93025', text: 'Potensi Relokasi' }
         ];
 
         div.style = `
@@ -152,7 +152,7 @@ function applyFilters() {
             (fUP3 === 'ALL' || item.UP3 === fUP3) &&
             (fType === 'ALL' || item['TYPE CHARGE'] === fType) &&
             (fCap === 'ALL' || item.KAPASITAS.toString() === fCap) &&
-            (fStatus === 'ALL' || item.REKOMENDASI.includes(fStatus))
+            (fStatus === 'ALL' || item.REKOMENDASI_DETAIL || item.REKOMENDASI.includes(fStatus))
         );
     });
 
@@ -180,7 +180,7 @@ function renderDashboard(data) {
 
         // badge warna
         let badge = 'bg-success';
-        if (item.REKOMENDASI.includes('RELOKASI')) badge = 'bg-danger';
+        if (item.REKOMENDASI.includes('POTENSI')) badge = 'bg-danger';
         if (item.REKOMENDASI.includes('TAMBAH')) badge = 'bg-warning text-dark';
 
         // TABLE
@@ -191,14 +191,20 @@ function renderDashboard(data) {
                 <td>${item['TYPE CHARGE'] || '-'}</td>
                 <td class="text-center">${item.KAPASITAS || 0}</td>
                 <td class="text-center text-primary fw-bold">${score}</td>
-                <td><span class="badge ${badge}">${item.REKOMENDASI}</span></td>
+                <td>
+                    <span class="badge ${badge}">
+                    ${item.REKOMENDASI}
+                    </span><br>    <small class="text-muted">
+                    ${item.REKOMENDASI_DETAIL || ''}
+                    </small>
+                </td>
             </tr>
         `;
 
         // MAP
         if (item.Latitude && item.Longitude) {
             const color =
-                item.REKOMENDASI.includes('RELOKASI') ? '#d93025' :
+                item.REKOMENDASI.includes('POTENSI') ? '#d93025' :
                 item.REKOMENDASI.includes('TAMBAH') ? '#f57f17' :
                 '#1e7e34';
 
@@ -214,7 +220,7 @@ function renderDashboard(data) {
             ).bindPopup(`
                 <b>${display}</b><br>
                 ULP: ${ulp}<br>
-                Transaksi: ${item.RATA2TRANSAKS}<br>
+                Transaksi: ${item.RATA2TRANSAKSI} Kali<br>
                 Kapasitas: ${item.KAPASITAS} kW<br>
                 Umur: ${item.UMUR}<br>
                 Skor: ${score}<br>
