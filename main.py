@@ -31,7 +31,12 @@ def main():
 
         # set index
         df_m = df_m.set_index(df_m.columns[0])
+        df_m = df_m.astype(str)
 
+        for col in df_m.columns:
+            df_m[col] = df_m[col].str.strip().str.replace(',', '.', regex=False)
+
+        df_m = df_m.apply(pd.to_numeric, errors='coerce').fillna(0)
         # bersihkan data (koma -> titik)
         df_m = df_m.applymap(lambda x: str(x).strip().replace(',', '.'))
         df_m = df_m.apply(pd.to_numeric, errors='coerce')
@@ -49,7 +54,7 @@ def main():
         ri = 1.12
         cr = ci / ri
 
-        print(f"CR: {cr}")
+        print(f"Hasil Perhitungan Konsistensi CR: {cr}")
 
         # ======================
         # 2. DATA SPKLU
