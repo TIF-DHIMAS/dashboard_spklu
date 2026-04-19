@@ -29,8 +29,14 @@ def main():
         if df_m.empty:
             raise Exception("Matriks AHP kosong")
 
-        df_m = df_m.set_index(df_m.columns[0])
-        matrix = df_m.values.astype(float)
+       df_m = df_m.set_index(df_m.columns[0])
+        # Bersihkan semua nilai
+        df_m = df_m.applymap(lambda x: str(x).strip().replace(',', '.'))
+        # Convert ke float (pakai coerce biar tidak crash)
+        df_m = df_m.apply(pd.to_numeric, errors='coerce')
+        # Isi NaN dengan 0 (opsional, tapi aman)
+        df_m = df_m.fillna(0)
+            matrix = df_m.values
 
         weights = (matrix / matrix.sum(axis=0)).mean(axis=1)
 
