@@ -114,7 +114,7 @@ def main():
             if row['RATA2TRANSAKSI'] >= 30:
                 return "TAMBAH UNIT"
             elif row['SCORE'] < 0.3:
-                return "RELOKASI"
+                return "POTENSI RELOKASI"
             else:
                 return "OPTIMAL"
 
@@ -151,6 +151,32 @@ def main():
         with open('data_spklu.json', 'w') as f:
             json.dump([], f, indent=4)
 
+# ======================
+# 6. MATCHING DONOR - PENERIMA
+# ======================
+
+df['REKOMENDASI_DETAIL'] = df['REKOMENDASI']
+
+penerima = df[df['REKOMENDASI'] == 'TAMBAH UNIT']
+donor = df[df['REKOMENDASI'] == 'POTENSI RELOKASI']
+
+for i, row in penerima.iterrows():
+    if donor.empty:
+        continue
+
+    # cari donor kapasitas paling mendekati
+    donor['selisih'] = abs(donor['KAPASITAS'] - row['KAPASITAS'])
+    kandidat = donor.sort_values(by=['selisih', 'SCORE']).iloc[0]
+
+    df.at[i, 'REKOMENDASI_DETAIL'] = (
+        f"Perlu tambah unit, dapat relokasi dari "
+        f"{kandidat['Nama Stasiun']} "
+        f"(Kapasitas {kandidat['KAPASITAS']} kW)"
+    )
+
+# donor juga diberi label jelas
+for i, row in donor.iterrows():
+    df.at[i, 'REKOMENDASI_DETAIL'] = "Potensi relokasi ke lokasi lain"
 
 if __name__ == "__main__":
     main()
