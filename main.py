@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import json
 import requests
-import os
 from io import StringIO
 
 URL_DATA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=312487335&single=true&output=csv'
@@ -23,16 +22,12 @@ def main():
         # ======================
         # 1. AHP
         # ======================
-        print("Ambil matriks AHP...")
         df_m = fetch_csv(URL_MATRIKS)
 
         if df_m.empty:
             raise Exception("Matriks AHP kosong")
 
-        # set index
-        df_m = df_m.set_index(df_m.columns[0])
-
-        df_m = df_m.astype(str)
+        df_m = df_m.set_index(df_m.columns[0]).astype(str)
 
         for col in df_m.columns:
             df_m[col] = df_m[col].str.strip().str.replace(',', '.', regex=False)
@@ -41,7 +36,6 @@ def main():
 
         matrix = df_m.values
 
-        # hitung bobot AHP
         weights = (matrix / matrix.sum(axis=0)).mean(axis=1)
 
         n = len(matrix)
@@ -51,19 +45,17 @@ def main():
         ri = 1.12
         cr = ci / ri
 
-        print(f"Hasil Perhitungan Konsistensi CR: {cr}")
+        print(f"CR: {cr}")
 
         # ======================
-        # 2. DATA SPKLU
+        # 2. DATA
         # ======================
-        print("Ambil data SPKLU...")
         df = fetch_csv(URL_DATA)
 
         if df.empty:
             raise Exception("Data SPKLU kosong")
 
         df.columns = df.columns.str.strip()
-        print("Kolom ditemukan:", df.columns.tolist())
 
         mapping = {
             'RATA2TRANSAKSI': 'Transaksi',
@@ -75,12 +67,6 @@ def main():
 
         kriteria_keys = list(mapping.keys())
 
-        # validasi kolom
-        for col in kriteria_keys:
-            if col not in df.columns:
-                raise Exception(f"Kolom '{col}' tidak ditemukan di data")
-
-        # bersihkan data angka
         for col in kriteria_keys:
             df[col] = pd.to_numeric(
                 df[col].astype(str).str.strip().str.replace(',', '.'),
@@ -106,54 +92,48 @@ def main():
 
         df['SCORE'] = (score - score.min()) / (score.max() - score.min() + 1e-9)
 
-       # ======================
-# 4. REKOMENDASI
-# ======================
-def rekom(row):
-    if row['RATA2TRANSAKSI'] >= 30:
-        return "TAMBAH UNIT"
-    elif row['SCORE'] < 0.3:
-        return "POTENSI RELOKASI"
-    else:
-        return "OPTIMAL"
-
-df['REKOMENDASI'] = df.apply(rekom, axis=1)
-
-# ======================
-# 4B. MATCHING DONOR - PENERIMA
-# ======================
-penerima = df[df['REKOMENDASI'] == 'TAMBAH UNIT'].copy()
-donor = df[df['REKOMENDASI'] == 'POTENSI RELOKASI'].copy()
-
-df['REKOMENDASI_DETAIL'] = df['REKOMENDASI']
-
-for i, rec in penerima.iterrows():
-    if donor.empty:
-        break
-
-    # cari donor dengan kapasitas paling mendekati
-    donor['SELISIH'] = abs(donor['KAPASITAS'] - rec['KAPASITAS'])
-    best = donor.sort_values('SELISIH').iloc[0]
-
-    donor_name = best.get('Nama Stasiun', 'Unknown')
-    donor_id = best.get('ID_SPKLU', '')
-    donor_cap = best.get('KAPASITAS', 0)
-
-    # update penerima
-    df.loc[i, 'REKOMENDASI_DETAIL'] = (
-        f"TAMBAH UNIT (Dari: {donor_id} - {donor_name}, {donor_cap} kW)"
-    )
-
-    # update donor
-    df.loc[best.name, 'REKOMENDASI_DETAIL'] = (
-        f"POTENSI RELOKASI (Ke: {rec.get('ID_SPKLU')} - {rec.get('Nama Stasiun')})"
-    )
-
-    # hapus donor agar tidak dipakai lagi
-    donor = donor.drop(best.name)
-    
         # ======================
-        # 5. OUTPUT JSON
+        # 4. REKOMENDASI
+        # ======================
+        def rekom(row):
+            if row['RATA2TRANSAKSI'] >= 30:
+                return "TAMBAH UNIT"
+            elif row['SCORE'] < 0.3:
+                return "POTENSI RELOKASI"
+            else:
+                return "OPTIMAL"
+
+        df['REKOMENDASI'] = df.apply(rekom, axis=1)
+
+        # ======================
+        # 4B. MATCHING
+        # ======================
+        penerima = df[df['REKOMENDASI'] == 'TAMBAH UNIT'].copy()
+        donor = df[df['REKOMENDASI'] == 'POTENSI RELOKASI'].copy()
+
+        df['REKOMENDASI_DETAIL'] = df['REKOMENDASI']
+
+        for i, rec in penerima.iterrows():
+            if donor.empty:
+                break
+
+            donor['SELISIH'] = abs(donor['KAPASITAS'] - rec['KAPASITAS'])
+            best = donor.sort_values('SELISIH').iloc[0]
+
+            df.loc[i, 'REKOMENDASI_DETAIL'] = (
+                f"TAMBAH UNIT (Dari: {best.get('ID_SPKLU')} - {best.get('Nama Stasiun')}, {best.get('KAPASITAS')} kW)"
+            )
+
+            df.loc[best.name, 'REKOMENDASI_DETAIL'] = (
+                f"POTENSI RELOKASI (Ke: {rec.get('ID_SPKLU')} - {rec.get('Nama Stasiun')})"
+            )
+
+            donor = donor.drop(best.name)
+
+        df = df.sort_values(by='SCORE', ascending=False)
+
+        # ======================
+        # 5. OUTPUT
         # ======================
         ahp_output = {
             "cr": round(float(cr), 6),
@@ -174,7 +154,6 @@ for i, rec in penerima.iterrows():
     except Exception as e:
         print("ERROR:", e)
 
-        # fallback supaya tidak kosong error
         with open('ahp_results.json', 'w') as f:
             json.dump({"error": str(e)}, f, indent=4)
 
