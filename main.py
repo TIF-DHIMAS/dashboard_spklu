@@ -52,7 +52,7 @@ def main():
         ri = 1.12
         cr = ci / ri
 
-        print(f"CR: {cr}")
+        print(f"Hasil Perhitungan CR : {cr}")
 
         # ======================
         # 2. DATA SPKLU
