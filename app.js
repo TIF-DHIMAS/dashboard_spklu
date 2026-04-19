@@ -214,7 +214,7 @@ function renderDashboard(data) {
             ).bindPopup(`
                 <b>${display}</b><br>
                 ULP: ${ulp}<br>
-                Transaksi: ${item.RATA2TRANSAKS} Kali<br>
+                Transaksi: ${item.RATA2TRANSAKSI} Kali<br>
                 Kapasitas: ${item.KAPASITAS} kW<br>
                 Umur: ${item.UMUR}<br>
                 Skor: ${score}<br>
