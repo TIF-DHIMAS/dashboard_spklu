@@ -191,7 +191,8 @@ function renderDashboard(data) {
                 <td>${item['TYPE CHARGE'] || '-'}</td>
                 <td class="text-center">${item.KAPASITAS || 0}</td>
                 <td class="text-center text-primary fw-bold">${score}</td>
-                <td><span class="badge ${badge}">${item.REKOMENDASI_DETAIL || item.REKOMENDASI}</span></td>
+                <td><span class="badge ${badge}">  ${item.REKOMENDASI_DETAIL || item.REKOMENDASI}</span>
+                    <br> <small class="text-muted">${item.PENGGANTI_LOKASI || ''}   </small> </td>
             </tr>
         `;
 
