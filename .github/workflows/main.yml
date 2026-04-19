@@ -36,7 +36,9 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # Add file di root directory agar sinkron dengan app.js
+          
           git add data_spklu.json ahp_results.json
-          git commit -m "Update SPKLU Data (Node 24 Ready)" || exit 0
-          git push
+          git commit -m "Update SPKLU Data" || echo "No changes"
+          
+          git pull origin main --rebase
+          git push origin main
