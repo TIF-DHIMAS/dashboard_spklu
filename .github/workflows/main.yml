@@ -16,7 +16,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # penting supaya bisa pull/rebase
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -26,19 +26,18 @@ jobs:
       - name: Install Dependencies
         run: pip install pandas numpy requests
 
+      - name: Pull latest changes (IMPORTANT)
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git pull origin main --rebase
+
       - name: Run AHP TOPSIS Analysis
         run: python main.py
 
       - name: Commit and Push Changes
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-
           git add data_spklu.json ahp_results.json
-          git commit -m "Auto update SPKLU data" || echo "No changes to commit"
+          git commit -m "Auto update SPKLU data" || echo "No changes"
 
-          # ambil update terbaru dari repo (hindari conflict)
-          git pull origin main --rebase
-
-          # push kembali
           git push origin main
