@@ -1,5 +1,6 @@
 name: Auto Calculate AHP TOPSIS SPKLU
-
+permissions:
+contents: write
 on:
   schedule:
     - cron: '*/30 * * * *' 
@@ -24,7 +25,7 @@ jobs:
 
       - name: Run AHP TOPSIS Analysis
         run: python main.py
-
+          
       - name: Debug - List Files
         run: ls -R  # Ini akan menunjukkan file apa saja yang ada setelah skrip jalan
 
