@@ -217,7 +217,7 @@ function renderDashboard(data) {
                 ULP: ${ulp}<br>
                 Transaksi: ${item.RATA2TRANSAKSI} Kali<br>
                 Kapasitas: ${item.KAPASITAS} kW<br>
-                Umur: ${item.UMUR}<br>
+                Umur: ${item.UMUR} Tahun<br>
                 Skor: ${score}<br>
                 <b>${item.REKOMENDASI_DETAIL || item.REKOMENDASI}</b><br>
                 ${item.PENGGANTI_LOKASI ? item.PENGGANTI_LOKASI : ''}
