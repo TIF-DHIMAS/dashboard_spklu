@@ -4,34 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DSS Monitoring SPKLU UID Kalbar</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
     <style>
         :root { --pln-blue: #0072bc; --pln-yellow: #ffec00; }
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .navbar { background-color: var(--pln-blue); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        #map { height: 500px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .filter-card { border-radius: 12px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .badge-optimal { background-color: #28a745; }
-        .badge-relokasi { background-color: #dc3545; }
-        .badge-tambah { background-color: #ffc107; color: #000; }
-        .table-container { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background-color: var(--pln-blue);
+            color: white;
+        }
+
+        #map {
+            height: 500px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .filter-card {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
     </style>
 </head>
+
 <body>
 
+<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg mb-4">
     <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1 text-white">DSS SPKLU - Niaga & Pemasaran UID Kalbar</span>
+        <span class="navbar-brand text-white fw-bold">
+            DSS SPKLU - Niaga & Pemasaran UID Kalbar
+        </span>
     </div>
 </nav>
 
 <div class="container-fluid">
+
+    <!-- FILTER + MAP -->
     <div class="row mb-4">
+
+        <!-- FILTER -->
         <div class="col-md-3">
             <div class="card filter-card p-3 mb-3">
                 <h6 class="fw-bold mb-3">Filter Dashboard</h6>
-                
+
                 <label class="small fw-bold">Unit Pelaksana (UP3)</label>
                 <select id="filterUP3" class="form-select mb-3" onchange="applyFilters()">
                     <option value="ALL">Semua UP3</option>
@@ -54,69 +85,90 @@
                     <option value="ALL">Semua Kapasitas</option>
                 </select>
 
+                <!-- ✅ DISAMAKAN DENGAN PYTHON -->
                 <label class="small fw-bold">Status Rekomendasi</label>
                 <select id="filterStatus" class="form-select" onchange="applyFilters()">
                     <option value="ALL">Semua Status</option>
-                    <option value="Optimal">Optimal</option>
-                    <option value="KANDIDAT RELOKASI">Kandidat Relokasi</option>
-                    <option value="TAMBAH UNIT">Tambah Unit</option>
+                    <option value="OPTIMAL">Optimal</option>
+                    <option value="RELOKASI">Relokasi</option>
+                    <option value="TAMBAH">Tambah Unit</option>
                 </select>
             </div>
         </div>
 
+        <!-- MAP -->
         <div class="col-md-9">
             <div id="map"></div>
         </div>
     </div>
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="table-container">
-            <h5 class="section-title">BOBOT KRITERIA METODE AHP</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered text-center align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Rata-rata Transaksi</th>
-                            <th>Populasi KBLBB</th>
-                            <th>Kapasitas Daya</th>
-                            <th>Biaya Investasi</th>
-                            <th>Umur Aset</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ahpWeightBody">
+
+    <!-- AHP -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="table-container">
+                <h5 class="fw-bold mb-3">BOBOT KRITERIA METODE AHP</h5>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Transaksi</th>
+                                <th>Pengguna EV</th>
+                                <th>Kapasitas</th>
+                                <th>Biaya</th>
+                                <th>Umur</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ahpWeightBody">
+                            <tr>
+                                <td colspan="5" class="text-muted">Memuat data AHP...</td>
+                            </tr>
                         </tbody>
-                </table>
+                    </table>
+                </div>
+
+                <!-- ✅ DIPINDAH MASUK -->
+                <p id="ahpFooter" class="small text-muted mt-2"></p>
             </div>
         </div>
     </div>
-</div>
-<p id="ahpFooter" class="small text-muted mt-2"></p>
-<div class="row">
-    <div class="col-12">
-        <div class="table-container">
-            <h5 class="section-title">MATRIKS REKOMENDASI STRATEGIS (AHP-TOPSIS)</h5>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>ID - Nama Stasiun</th>
-                            <th>ULP</th>
-                            <th>Tipe Charger</th>
-                            <th class="text-center">Kapasitas</th>
-                            <th class="text-center">Skor Kelayakan</th>
-                            <th>Aksi Strategis</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
+
+    <!-- TABEL HASIL -->
+    <div class="row">
+        <div class="col-12">
+            <div class="table-container">
+                <h5 class="fw-bold mb-3">MATRIKS REKOMENDASI STRATEGIS (AHP-TOPSIS)</h5>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID - Nama Stasiun</th>
+                                <th>ULP</th>
+                                <th>Tipe Charger</th>
+                                <th class="text-center">Kapasitas</th>
+                                <th class="text-center">Skor</th>
+                                <th>Rekomendasi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    Memuat data...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
         </div>
     </div>
-</div>
-    
+
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="app.js"></script>
+
 </body>
 </html>
