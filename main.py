@@ -103,12 +103,12 @@ def main():
 
         # ================= REKOMENDASI =================
         def rekom(row):
-            if row['RATA2TRANSAKSI'] >= 30:
-                return "TAMBAH UNIT"
+            if row['RATA2TRANSAKSI'] >= 30 and row['SCORE'] >= 0.6:
+                    return "TAMBAH UNIT"
             elif row['SCORE'] < 0.3:
-                return "POTENSI RELOKASI"
+                    return "POTENSI RELOKASI"
             else:
-                return "OPTIMAL"
+                    return "OPTIMAL"
 
         df['REKOMENDASI'] = df.apply(rekom, axis=1)
         df['REKOMENDASI_DETAIL'] = df['REKOMENDASI']
