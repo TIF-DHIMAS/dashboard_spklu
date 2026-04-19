@@ -25,12 +25,13 @@ jobs:
       - name: Run AHP TOPSIS Analysis
         run: python main.py
 
+      - name: Debug - List Files
+        run: ls -R  # Ini akan menunjukkan file apa saja yang ada setelah skrip jalan
+
       - name: Commit and Push Changes
         run: |
           git config --global user.name 'GitHub Action Bot'
           git config --global user.email 'action@github.com'
-          # PERBAIKAN DI SINI: Nama file disesuaikan dengan output main.py
-          # Menggunakan git add . lebih aman untuk menangkap semua perubahan file json
           git add data_spklu.json ahp_results.json
           git commit -m "Update hasil perhitungan AHP TOPSIS otomatis" || exit 0
           git push
