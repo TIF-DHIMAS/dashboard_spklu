@@ -1,3 +1,11 @@
 {
-    "error": "'DataFrame' object has no attribute 'applymap'"
+    "cr": 0.025268,
+    "is_consistent": true,
+    "weights": {
+        "Transaksi": 0.396798,
+        "Pengguna EV": 0.346271,
+        "Kapasitas": 0.127209,
+        "Biaya": 0.078661,
+        "Umur": 0.051061
+    }
 }
