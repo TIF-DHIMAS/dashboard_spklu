@@ -224,7 +224,8 @@ function renderDashboard(data) {
                 Kapasitas: ${item.KAPASITAS} kW<br>
                 Umur: ${item.UMUR}<br>
                 Skor: ${score}<br>
-                <b>${item.REKOMENDASI}</b>
+                <b>${item.REKOMENDASI}</b><br>
+                <small>${item.REKOMENDASI_DETAIL || ''}</small>
             `);
 
             markerLayer.addLayer(marker);
