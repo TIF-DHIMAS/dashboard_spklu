@@ -3,41 +3,56 @@ let markerLayer = L.layerGroup();
 let rawData = [];
 let ahpData = null;
 
-// 1. Inisialisasi Peta
+// ==========================
+// 1. INIT MAP
+// ==========================
 function initMap() {
-    map = L.map('map').setView([-0.026330, 109.342504], 7); 
+    map = L.map('map').setView([-0.026330, 109.342504], 7);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
+
     markerLayer.addTo(map);
-    // Panggil legenda di sini
     addLegend(map);
 }
+
+// ==========================
+// 2. LEGEND
+// ==========================
 function addLegend(map) {
     const legend = L.control({ position: 'bottomright' });
 
     legend.onAdd = function () {
         const div = L.DomUtil.create('div', 'info legend');
+
         const labels = [
             { color: '#1e7e34', text: 'Optimal' },
             { color: '#f57f17', text: 'Tambah Unit' },
-            { color: '#d93025', text: 'Kandidat Relokasi' }
+            { color: '#d93025', text: 'Relokasi' }
         ];
 
-        div.style.backgroundColor = 'white';
-        div.style.padding = '10px';
-        div.style.border = '1px solid #ccc';
-        div.style.borderRadius = '5px';
-        div.style.lineHeight = '1.5em';
-        div.style.boxShadow = '0 0 15px rgba(0,0,0,0.2)';
+        div.style = `
+            background:white;
+            padding:10px;
+            border-radius:6px;
+            font-size:12px;
+        `;
 
-        div.innerHTML = '<h6 style="margin-bottom: 8px; font-weight: bold; font-size: 12px;">Status Rekomendasi</h6>';
+        div.innerHTML = '<b>Status</b><br>';
 
         labels.forEach(item => {
             div.innerHTML += `
-                <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                    <i style="background: ${item.color}; width: 14px; height: 14px; border-radius: 50%; display: inline-block; margin-right: 8px; border: 1px solid #fff;"></i>
-                    <span style="font-size: 11px;">${item.text}</span>
+                <div>
+                    <span style="
+                        background:${item.color};
+                        width:12px;
+                        height:12px;
+                        display:inline-block;
+                        border-radius:50%;
+                        margin-right:6px;
+                    "></span>
+                    ${item.text}
                 </div>
             `;
         });
@@ -47,75 +62,85 @@ function addLegend(map) {
 
     legend.addTo(map);
 }
-// 2. Load Data dari JSON (Data Utama & Data AHP)
+
+// ==========================
+// 3. FETCH DATA
+// ==========================
 async function fetchData() {
     try {
-        // Mengambil data bobot AHP terlebih dahulu
+        // AHP
         const ahpResponse = await fetch('ahp_results.json');
         ahpData = await ahpResponse.json();
         renderAHPTable(ahpData);
 
-        // Mengambil data utama SPKLU
+        // DATA SPKLU
         const response = await fetch('data_spklu.json');
         rawData = await response.json();
-        
+
+        if (!rawData || rawData.length === 0) {
+            console.warn("Data kosong!");
+        }
+
         populateKapasitasFilter(rawData);
         renderDashboard(rawData);
+
     } catch (error) {
-        console.error("Gagal memuat data JSON:", error);
+        console.error("Gagal load JSON:", error);
     }
 }
 
-// 3. Render Tabel Bobot AHP secara Dinamis
+// ==========================
+// 4. AHP TABLE
+// ==========================
 function renderAHPTable(data) {
     const ahpBody = document.getElementById('ahpWeightBody');
-    const ahpFooter = document.getElementById('ahpFooter'); // Ambil elemen footer
-    
-    if (!ahpBody || !data) return;
+    const ahpFooter = document.getElementById('ahpFooter');
 
-    // 1. Render isi tabel (seperti sebelumnya)
-    const getWeight = (key) => {
-        const found = data.details.find(d => d.kriteria.toLowerCase().includes(key.toLowerCase()));
-        return found ? `${found.bobot}%` : '-';
-    };
+    if (!data || data.error) {
+        ahpBody.innerHTML = `<tr><td colspan="5" class="text-danger">AHP Error</td></tr>`;
+        return;
+    }
+
+    const w = data.weights;
 
     ahpBody.innerHTML = `
-        <tr class="fw-bold text-primary">
-            <td>${getWeight('Rata2')}</td>
-            <td>${getWeight('KBLBB')}</td>
-            <td>${getWeight('Kapasitas')}</td>
-            <td>${getWeight('Biaya')}</td>
-            <td>${getWeight('Umur')}</td>
-        </tr>`;
+        <tr class="text-center fw-bold text-primary">
+            <td>${w.Transaksi}</td>
+            <td>${w['Pengguna EV']}</td>
+            <td>${w.Kapasitas}</td>
+            <td>${w.Biaya}</td>
+            <td>${w.Umur}</td>
+        </tr>
+    `;
 
-    // 2. Update Footer dengan Angka Konsistensi
-    if (ahpFooter) {
-        const crValue = data.consistency_ratio;
-        const statusText = data.is_consistent ? 
-            '<span class="text-success">(Konsisten)</span>' : 
-            '<span class="text-danger">(Tidak Konsisten - Perlu Evaluasi Matriks)</span>';
+    const status = data.is_consistent
+        ? '<span class="text-success">Konsisten</span>'
+        : '<span class="text-danger">Tidak Konsisten</span>';
 
-        ahpFooter.innerHTML = `* Bobot ini hasil perhitungan AHP dengan <strong>Consistency Ratio (CR): ${crValue}</strong> ${statusText}.`;
-    }
+    ahpFooter.innerHTML = `CR: <b>${data.cr}</b> ${status}`;
 }
 
-// 4. Mengisi Dropdown Kapasitas secara Dinamis
+// ==========================
+// 5. FILTER DROPDOWN
+// ==========================
 function populateKapasitasFilter(data) {
-    const capacities = [...new Set(data.map(item => item.KAPASITAS))].sort((a,b) => a-b);
     const select = document.getElementById('filterKapasitas');
-    
-    // Bersihkan opsi lama kecuali "ALL"
-    select.innerHTML = '<option value="ALL">SEMUA KAPASITAS</option>';
-    
+
+    const capacities = [...new Set(data.map(d => d.KAPASITAS))].sort((a, b) => a - b);
+
+    select.innerHTML = '<option value="ALL">SEMUA</option>';
+
     capacities.forEach(cap => {
-        let opt = document.createElement('option');
+        const opt = document.createElement('option');
         opt.value = cap;
         opt.innerHTML = `${cap} kW`;
         select.appendChild(opt);
     });
 }
 
-// 5. Logika Filter
+// ==========================
+// 6. FILTER LOGIC
+// ==========================
 function applyFilters() {
     const fUP3 = document.getElementById('filterUP3').value;
     const fType = document.getElementById('filterType').value;
@@ -123,76 +148,87 @@ function applyFilters() {
     const fStatus = document.getElementById('filterStatus').value;
 
     const filtered = rawData.filter(item => {
-        const matchUP3 = (fUP3 === 'ALL' || item.UP3 === fUP3);
-        const matchType = (fType === 'ALL' || item['TYPE CHARGE'] === fType);
-        const matchCap = (fCap === 'ALL' || item.KAPASITAS.toString() === fCap);
-        const matchStatus = (fStatus === 'ALL' || item.REKOMENDASI.toUpperCase().includes(fStatus.toUpperCase()));
-        
-        return matchUP3 && matchType && matchCap && matchStatus;
+        return (
+            (fUP3 === 'ALL' || item.UP3 === fUP3) &&
+            (fType === 'ALL' || item['TYPE CHARGE'] === fType) &&
+            (fCap === 'ALL' || item.KAPASITAS.toString() === fCap) &&
+            (fStatus === 'ALL' || item.REKOMENDASI.includes(fStatus))
+        );
     });
 
     renderDashboard(filtered);
 }
 
-// 6. Render Marker dan Tabel Utama
+// ==========================
+// 7. RENDER DASHBOARD
+// ==========================
 function renderDashboard(data) {
-    // Bersihkan Tabel & Marker
     markerLayer.clearLayers();
+
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
 
     data.forEach(item => {
-        // Format ID - Nama Stasiun
-        const idDisplay = item.ID_SPKLU ? parseFloat(item.ID_SPKLU).toFixed(0) : 'N/A';
-        const displayName = `${idDisplay} - ${item['Nama Stasiun']}`;
-        const valULP = item.ULP || "N/A";
 
-        // Tentukan Warna Badge Rekomendasi
-        let badgeClass = 'bg-success'; // Default Optimal
-        if(item.REKOMENDASI.includes('RELOKASI')) badgeClass = 'bg-danger';
-        if(item.REKOMENDASI.includes('TAMBAH')) badgeClass = 'bg-warning text-dark';
+        const score = parseFloat(item.SCORE || 0).toFixed(4);
 
-        // Render Baris Tabel
-        const row = `<tr>
-            <td class="fw-bold">${displayName}</td>
-            <td><span class="badge bg-light text-dark border">${valULP}</span></td>
-            <td><small class="text-muted">${item['TYPE CHARGE'] || '-'}</small></td>
-            <td class="text-center">${item.KAPASITAS || 0} kW</td>
-            <td class="text-center fw-bold text-primary">${parseFloat(item.score || 0).toFixed(4)}</td>
-            <td><span class="badge ${badgeClass} px-3 py-2 rounded-pill shadow-sm w-100">${item.REKOMENDASI}</span></td>
-        </tr>`;
-        tbody.innerHTML += row;
+        const nama = item['Nama Stasiun'] || '-';
+        const id = item.ID_SPKLU ? parseInt(item.ID_SPKLU) : '-';
+        const display = `${id} - ${nama}`;
 
-        // 7. Render Marker Peta
-        const mColor = item.REKOMENDASI.includes('RELOKASI') ? '#d93025' : 
-                       (item.REKOMENDASI.includes('TAMBAH') ? '#f57f17' : '#1e7e34');
-        
+        const ulp = item.ULP || '-';
+
+        // badge warna
+        let badge = 'bg-success';
+        if (item.REKOMENDASI.includes('RELOKASI')) badge = 'bg-danger';
+        if (item.REKOMENDASI.includes('TAMBAH')) badge = 'bg-warning text-dark';
+
+        // TABLE
+        tbody.innerHTML += `
+            <tr>
+                <td class="fw-bold">${display}</td>
+                <td>${ulp}</td>
+                <td>${item['TYPE CHARGE'] || '-'}</td>
+                <td class="text-center">${item.KAPASITAS || 0}</td>
+                <td class="text-center text-primary fw-bold">${score}</td>
+                <td><span class="badge ${badge}">${item.REKOMENDASI}</span></td>
+            </tr>
+        `;
+
+        // MAP
         if (item.Latitude && item.Longitude) {
-            const marker = L.circleMarker([item.Latitude, item.Longitude], {
-                radius: 9,
-                fillColor: mColor,
-                color: "#fff",
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.9
-            }).bindPopup(`
-                <div style="font-family: Arial">
-                    <b>${displayName}</b><br>
-                    <hr style="margin: 5px 0">
-                    ULP : ${valULP}<br>
-                    Rata2: ${item.RATA2TRANSAKSI} Kali Transaksi<br>
-                    Kapasitas Daya : ${item.KAPASITAS} KW<br>
-                    Umur  : ${item.UMUR} Tahun<br>
-                    Skor : ${parseFloat(item.score).toFixed(4)}<br>
-                    <b>Status : ${item.REKOMENDASI}</b>
-                </div>
+            const color =
+                item.REKOMENDASI.includes('RELOKASI') ? '#d93025' :
+                item.REKOMENDASI.includes('TAMBAH') ? '#f57f17' :
+                '#1e7e34';
+
+            const marker = L.circleMarker(
+                [item.Latitude, item.Longitude],
+                {
+                    radius: 8,
+                    fillColor: color,
+                    color: "#fff",
+                    weight: 2,
+                    fillOpacity: 0.9
+                }
+            ).bindPopup(`
+                <b>${display}</b><br>
+                ULP: ${ulp}<br>
+                Transaksi: ${item.RATA2TRANSAKS}<br>
+                Kapasitas: ${item.KAPASITAS} kW<br>
+                Umur: ${item.UMUR}<br>
+                Skor: ${score}<br>
+                <b>${item.REKOMENDASI}</b>
             `);
+
             markerLayer.addLayer(marker);
         }
     });
 }
 
-// Inisialisasi saat halaman dimuat
+// ==========================
+// INIT
+// ==========================
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
     fetchData();
