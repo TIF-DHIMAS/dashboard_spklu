@@ -26,8 +26,8 @@ jobs:
       - name: Run AHP TOPSIS Analysis
         run: python main.py
           
-      - name: Debug - List Files
-        run: ls -R  # Ini akan menunjukkan file apa saja yang ada setelah skrip jalan
+      - name: Check Created Files
+        run: ls -l *.json  # Ini untuk memastikan file benar-benar ada
 
       - name: Commit and Push Changes
         run: |
