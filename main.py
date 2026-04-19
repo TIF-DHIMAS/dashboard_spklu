@@ -9,7 +9,6 @@ URL_DATA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-Ub
 
 # URL CSV Matriks AHP (Sheet yang berisi tabel 5x5 hasil Geometric Mean)
 URL_MATRIKS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1780305250&single=true&output=csv'
-
 def hitung_ahp_otomatis():
     """
     Menghitung bobot kriteria dengan mengambil matriks langsung dari Google Sheets.
