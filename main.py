@@ -115,7 +115,7 @@ def main():
             json.dump(ahp_summary, f, indent=4)
             
         # Simpan hasil perankingan alternatif (TOPSIS)
-        df.to_json('data_spklu_ranked.json', orient='records', double_precision=6)
+        df.to_json('data_spklu.json', orient='records', double_precision=6)
         
         print("-" * 30)
         print(f"ANALISIS SELESAI")
