@@ -5,37 +5,57 @@ import requests
 import os
 from io import StringIO
 
-# URL CSV dari Google Sheets Anda
 URL_DATA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=312487335&single=true&output=csv'
 URL_MATRIKS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1780305250&single=true&output=csv'
 
+
+def fetch_csv(url):
+    res = requests.get(url)
+    if res.status_code != 200 or "html" in res.text.lower():
+        raise Exception("Gagal ambil CSV (kemungkinan bukan format CSV)")
+    return pd.read_csv(StringIO(res.text))
+
+
 def main():
     try:
-        print("Mengambil data terbaru...")
-        
-        # 1. HITUNG AHP DINAMIS (Matriks GEOMAN)
-        res_m = requests.get(URL_MATRIKS)
-        df_m = pd.read_csv(StringIO(res_m.text), index_col=0)
+        print("=== START PROCESS ===")
+
+        # ======================
+        # 1. AHP
+        # ======================
+        print("Ambil matriks AHP...")
+        df_m = fetch_csv(URL_MATRIKS)
+
+        if df_m.empty:
+            raise Exception("Matriks AHP kosong")
+
+        df_m = df_m.set_index(df_m.columns[0])
         matrix = df_m.values.astype(float)
-        
-        # Hitung Eigenvector (Bobot)
+
         weights = (matrix / matrix.sum(axis=0)).mean(axis=1)
-        
-        # Hitung CR otomatis (Target: 0.0252)
+
         n = len(matrix)
         ws_vector = np.dot(matrix, weights)
-        consistency_vector = ws_vector / weights
-        lambda_max = np.mean(consistency_vector)
+        lambda_max = np.mean(ws_vector / weights)
         ci = (lambda_max - n) / (n - 1)
-        ri = 1.12 
-        calculated_cr = ci / ri
+        ri = 1.12
+        cr = ci / ri
 
-        # 2. PROSES DATA SPKLU (TOPSIS)
-        res_d = requests.get(URL_DATA)
-        df = pd.read_csv(StringIO(res_d.text))
+        print(f"CR: {cr}")
+
+        # ======================
+        # 2. DATA SPKLU
+        # ======================
+        print("Ambil data SPKLU...")
+        df = fetch_csv(URL_DATA)
+
+        if df.empty:
+            raise Exception("Data SPKLU kosong")
+
         df.columns = df.columns.str.strip()
-        
-        # Mapping kolom sesuai image_61071f.png
+        print("Kolom ditemukan:", df.columns.tolist())
+
+        # Mapping HARUS sama dengan Google Sheet
         mapping = {
             'RATA2TRANSAKS': 'Transaksi',
             'KBLBB': 'Pengguna EV',
@@ -43,51 +63,84 @@ def main():
             'BIAYA': 'Biaya',
             'UMUR': 'Umur'
         }
-        
+
         kriteria_keys = list(mapping.keys())
+
+        # Validasi kolom
         for col in kriteria_keys:
-            if col in df.columns:
-                df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
-        
-        # Normalisasi TOPSIS
-        mat = df[kriteria_keys].values.astype(float)
-        norm = mat / np.sqrt((mat**2).sum(axis=0) + 1e-9)
+            if col not in df.columns:
+                raise Exception(f"Kolom '{col}' tidak ditemukan di data")
+
+        # Konversi angka
+        for col in kriteria_keys:
+            df[col] = pd.to_numeric(
+                df[col].astype(str).str.replace(',', '.'),
+                errors='coerce'
+            ).fillna(0)
+
+        mat = df[kriteria_keys].values
+
+        # ======================
+        # 3. TOPSIS
+        # ======================
+        norm = mat / np.sqrt((mat ** 2).sum(axis=0) + 1e-9)
         weighted = norm * weights
-        
-        # Benefit (0,1,2) & Cost (3,4)
-        score = (weighted[:, 0] + weighted[:, 1] + weighted[:, 2]) - (weighted[:, 3] + weighted[:, 4])
+
+        score = (
+            weighted[:, 0] +
+            weighted[:, 1] +
+            weighted[:, 2]
+        ) - (
+            weighted[:, 3] +
+            weighted[:, 4]
+        )
+
         df['SCORE'] = (score - score.min()) / (score.max() - score.min() + 1e-9)
 
-        # 3. LOGIKA REKOMENDASI (Transaksi >= 30)
-        def beri_rekomendasi(row):
+        # ======================
+        # 4. REKOMENDASI
+        # ======================
+        def rekom(row):
             if row['RATA2TRANSAKS'] >= 30:
                 return "TAMBAH UNIT"
             elif row['SCORE'] < 0.3:
-                return "KANDIDAT RELOKASI"
+                return "RELOKASI"
             else:
                 return "OPTIMAL"
 
-        df['REKOMENDASI'] = df.apply(beri_rekomendasi, axis=1)
+        df['REKOMENDASI'] = df.apply(rekom, axis=1)
+
         df = df.sort_values(by='SCORE', ascending=False)
 
-        # 4. SIMPAN OUTPUT KE ROOT
+        # ======================
+        # 5. OUTPUT
+        # ======================
         ahp_output = {
-            "cr": round(float(calculated_cr), 6),
-            "is_consistent": bool(calculated_cr < 0.1),
-            "weights": {mapping[k]: round(float(w), 6) for k, w in zip(kriteria_keys, weights)}
+            "cr": round(float(cr), 6),
+            "is_consistent": bool(cr < 0.1),
+            "weights": {
+                mapping[k]: round(float(w), 6)
+                for k, w in zip(kriteria_keys, weights)
+            }
         }
+
         with open('ahp_results.json', 'w') as f:
             json.dump(ahp_output, f, indent=4)
-            
-        df.to_json('data_spklu.json', orient='records', double_precision=6)
-        print(f"Update Berhasil! CR: {calculated_cr:.6f}")
+
+        df.to_json('data_spklu.json', orient='records', indent=4)
+
+        print("=== SUCCESS ===")
 
     except Exception as e:
-        print(f"Error: {e}")
-        # Pastikan file dummy ada agar git add tidak gagal
-        for f_name in ['data_spklu.json', 'ahp_results.json']:
-            if not os.path.exists(f_name):
-                with open(f_name, 'w') as f: f.write('{}')
+        print("ERROR:", e)
+
+        # fallback file biar tidak kosong total
+        with open('data_spklu.json', 'w') as f:
+            json.dump([], f)
+
+        with open('ahp_results.json', 'w') as f:
+            json.dump({"error": str(e)}, f)
+
 
 if __name__ == "__main__":
     main()
