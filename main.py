@@ -12,7 +12,7 @@ URL_MATRIKS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc
 def fetch_csv(url):
     res = requests.get(url)
     if res.status_code != 200 or "html" in res.text.lower():
-        raise Exception("Gagal ambil CSV (kemungkinan bukan format CSV)")
+        raise Exception("Gagal ambil CSV dari Google Sheets")
     return pd.read_csv(StringIO(res.text))
 
 
@@ -29,15 +29,17 @@ def main():
         if df_m.empty:
             raise Exception("Matriks AHP kosong")
 
-       df_m = df_m.set_index(df_m.columns[0])
-        # Bersihkan semua nilai
-        df_m = df_m.applymap(lambda x: str(x).strip().replace(',', '.'))
-        # Convert ke float (pakai coerce biar tidak crash)
-        df_m = df_m.apply(pd.to_numeric, errors='coerce')
-        # Isi NaN dengan 0 (opsional, tapi aman)
-        df_m = df_m.fillna(0)
-            matrix = df_m.values
+        # set index
+        df_m = df_m.set_index(df_m.columns[0])
 
+        # bersihkan data (koma -> titik)
+        df_m = df_m.applymap(lambda x: str(x).strip().replace(',', '.'))
+        df_m = df_m.apply(pd.to_numeric, errors='coerce')
+        df_m = df_m.fillna(0)
+
+        matrix = df_m.values
+
+        # hitung bobot AHP
         weights = (matrix / matrix.sum(axis=0)).mean(axis=1)
 
         n = len(matrix)
@@ -61,7 +63,6 @@ def main():
         df.columns = df.columns.str.strip()
         print("Kolom ditemukan:", df.columns.tolist())
 
-        # Mapping HARUS sama dengan Google Sheet
         mapping = {
             'RATA2TRANSAKS': 'Transaksi',
             'KBLBB': 'Pengguna EV',
@@ -72,15 +73,15 @@ def main():
 
         kriteria_keys = list(mapping.keys())
 
-        # Validasi kolom
+        # validasi kolom
         for col in kriteria_keys:
             if col not in df.columns:
                 raise Exception(f"Kolom '{col}' tidak ditemukan di data")
 
-        # Konversi angka
+        # bersihkan data angka
         for col in kriteria_keys:
             df[col] = pd.to_numeric(
-                df[col].astype(str).str.replace(',', '.'),
+                df[col].astype(str).str.strip().str.replace(',', '.'),
                 errors='coerce'
             ).fillna(0)
 
@@ -119,7 +120,7 @@ def main():
         df = df.sort_values(by='SCORE', ascending=False)
 
         # ======================
-        # 5. OUTPUT
+        # 5. OUTPUT JSON
         # ======================
         ahp_output = {
             "cr": round(float(cr), 6),
@@ -140,12 +141,12 @@ def main():
     except Exception as e:
         print("ERROR:", e)
 
-        # fallback file biar tidak kosong total
-        with open('data_spklu.json', 'w') as f:
-            json.dump([], f)
-
+        # fallback supaya tidak kosong error
         with open('ahp_results.json', 'w') as f:
-            json.dump({"error": str(e)}, f)
+            json.dump({"error": str(e)}, f, indent=4)
+
+        with open('data_spklu.json', 'w') as f:
+            json.dump([], f, indent=4)
 
 
 if __name__ == "__main__":
