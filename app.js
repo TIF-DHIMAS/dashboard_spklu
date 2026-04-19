@@ -117,7 +117,7 @@ function renderAHPTable(data) {
         ? '<span class="text-success">Konsisten</span>'
         : '<span class="text-danger">Tidak Konsisten</span>';
 
-    ahpFooter.innerHTML = `CR: <b>${data.cr}</b> ${status}`;
+    ahpFooter.innerHTML = `Hasil Perhitungan Konsistensi CR: <b>${data.cr}</b> ${status}`;
 }
 
 // ==========================
