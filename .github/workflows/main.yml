@@ -32,6 +32,7 @@ jobs:
           git config --global user.name 'GitHub Action Bot'
           git config --global user.email 'action@github.com'
           # UPDATE DI SINI: Menambahkan ahp_results.json agar ikut disimpan
-          git add data_spklu.json ahp_results.json
+          git add data_spklu.json 
+          git add ahp_results.json
           git commit -m "Update hasil perhitungan AHP TOPSIS otomatis" || exit 0
           git push
