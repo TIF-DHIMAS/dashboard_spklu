@@ -18,7 +18,8 @@
         "UMUR":1,
         "SCORE":0.9999999979,
         "REKOMENDASI":"TAMBAH UNIT",
-        "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 247.0 - SPKLU PLN UP3 SANGGAU, 60.0 kW)"
+        "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 1895.0 - SPKLU (ARISTA POWER) BYD PONTIANAK, 60.0 kW)",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU GUDANG CEMARA",
@@ -39,7 +40,8 @@
         "UMUR":2,
         "SCORE":0.3131466559,
         "REKOMENDASI":"OPTIMAL",
-        "REKOMENDASI_DETAIL":"OPTIMAL"
+        "REKOMENDASI_DETAIL":"OPTIMAL",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU GAIA MALL",
@@ -60,7 +62,8 @@
         "UMUR":4,
         "SCORE":0.3057183844,
         "REKOMENDASI":"OPTIMAL",
-        "REKOMENDASI_DETAIL":"OPTIMAL"
+        "REKOMENDASI_DETAIL":"OPTIMAL",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU GOR PLN A YANI",
@@ -81,7 +84,8 @@
         "UMUR":2,
         "SCORE":0.2746046833,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU GOLDEN TULIP",
@@ -102,7 +106,8 @@
         "UMUR":1,
         "SCORE":0.2445061823,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP SEI JAWI",
@@ -123,7 +128,8 @@
         "UMUR":2,
         "SCORE":0.2367194561,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU HOTEL BORNEO",
@@ -144,7 +150,8 @@
         "UMUR":1,
         "SCORE":0.2328040786,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU FKIP KAMPUS UNTAN",
@@ -165,7 +172,8 @@
         "UMUR":1,
         "SCORE":0.225235196,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU MITRA ANDA",
@@ -186,7 +194,8 @@
         "UMUR":1,
         "SCORE":0.225235196,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP SIANTAN",
@@ -207,7 +216,8 @@
         "UMUR":2,
         "SCORE":0.2174484698,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU HOTEL MAESTRO PONTIANAK",
@@ -228,7 +238,8 @@
         "UMUR":2,
         "SCORE":0.2174484698,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU (ARISTA POWER) BYD PONTIANAK",
@@ -249,7 +260,8 @@
         "UMUR":1,
         "SCORE":0.2154228815,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 455.0 - SPKLU PLN UP3 PONTIANAK)",
+        "PENGGANTI_LOKASI":"Gantikan oleh: 766.0 - SPKLU Sungai Pinyuh"
     },
     {
         "Nama Stasiun":"SPKLU BNI PONTIANAK",
@@ -270,7 +282,8 @@
         "UMUR":1,
         "SCORE":0.2066209551,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU SIANTAN EXTEND",
@@ -291,7 +304,8 @@
         "UMUR":1,
         "SCORE":0.2059642097,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU HOTEL MAHKOTA",
@@ -312,7 +326,8 @@
         "UMUR":2,
         "SCORE":0.1975207381,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU Hotel Mercure Pontianak",
@@ -333,7 +348,8 @@
         "UMUR":3,
         "SCORE":0.1897340119,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU CAFE RUMAH KEDUA",
@@ -354,7 +370,8 @@
         "UMUR":0,
         "SCORE":0.1494907599,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU ULP SINTANG",
@@ -375,7 +392,8 @@
         "UMUR":1,
         "SCORE":0.1312894924,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN UID KALBAR",
@@ -396,7 +414,8 @@
         "UMUR":2,
         "SCORE":0.1228460208,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN UID KALBAR",
@@ -417,7 +436,8 @@
         "UMUR":2,
         "SCORE":0.0963549315,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN UP3 MEMPAWAH",
@@ -438,7 +458,8 @@
         "UMUR":2,
         "SCORE":0.0578129589,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU SANDAI",
@@ -459,7 +480,8 @@
         "UMUR":1,
         "SCORE":0.0542055472,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU DE BROTHER",
@@ -480,7 +502,8 @@
         "UMUR":1,
         "SCORE":0.0487273024,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU ULP NGABANG",
@@ -501,7 +524,8 @@
         "UMUR":1,
         "SCORE":0.0469854442,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU ULP KETAPANG KOTA",
@@ -522,7 +546,8 @@
         "UMUR":1,
         "SCORE":0.0469854442,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU ULP SAMBAS",
@@ -543,7 +568,8 @@
         "UMUR":1,
         "SCORE":0.0469854442,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU HOTEL MAHKOTA",
@@ -564,7 +590,8 @@
         "UMUR":2,
         "SCORE":0.0402838308,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP PEMANGKAT",
@@ -585,7 +612,8 @@
         "UMUR":2,
         "SCORE":0.0391987181,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP SEI DURI",
@@ -606,7 +634,8 @@
         "UMUR":2,
         "SCORE":0.0391987181,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP KAKAP",
@@ -627,7 +656,8 @@
         "UMUR":2,
         "SCORE":0.0391987181,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP NANGA PINOH",
@@ -648,7 +678,8 @@
         "UMUR":2,
         "SCORE":0.0385419726,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN UP3 SINGKAWANG",
@@ -669,7 +700,8 @@
         "UMUR":4,
         "SCORE":0.0376664344,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU ULP SEKURA",
@@ -690,7 +722,8 @@
         "UMUR":1,
         "SCORE":0.0277144579,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN UP3 SANGGAU",
@@ -711,7 +744,8 @@
         "UMUR":3,
         "SCORE":0.0250970616,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 455.0 - SPKLU PLN UP3 PONTIANAK)"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP RASAU JAYA",
@@ -732,7 +766,8 @@
         "UMUR":2,
         "SCORE":0.0199277318,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN KJ TAYAN",
@@ -753,7 +788,8 @@
         "UMUR":2,
         "SCORE":0.0192709863,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP BALAI KARANGAN",
@@ -774,7 +810,8 @@
         "UMUR":2,
         "SCORE":0.0192709863,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP SEKADAU",
@@ -795,7 +832,8 @@
         "UMUR":2,
         "SCORE":0.0192709863,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP BENGKAYANG",
@@ -816,7 +854,8 @@
         "UMUR":2,
         "SCORE":0.0192709863,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP SUKADANA",
@@ -837,7 +876,8 @@
         "UMUR":1,
         "SCORE":0.0160123543,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PUTUSSIBAU",
@@ -858,7 +898,8 @@
         "UMUR":1,
         "SCORE":0.0160123543,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU KJ KUALA DUA",
@@ -879,7 +920,8 @@
         "UMUR":1,
         "SCORE":0.0084434716,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU KJ SENAKIN",
@@ -900,7 +942,8 @@
         "UMUR":1,
         "SCORE":0.0084434716,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU TEPUAI",
@@ -921,7 +964,8 @@
         "UMUR":1,
         "SCORE":0.0084434716,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU ULP SANGGAU KOTA",
@@ -942,7 +986,8 @@
         "UMUR":1,
         "SCORE":0.0084434716,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN KJ NANGA TAYAP",
@@ -963,7 +1008,8 @@
         "UMUR":1,
         "SCORE":0.0084434716,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN KJ SIDUK",
@@ -984,7 +1030,8 @@
         "UMUR":1,
         "SCORE":0.0084434716,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU KJ SAJINGAN",
@@ -1005,7 +1052,8 @@
         "UMUR":1,
         "SCORE":0.0084434716,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU KJ SELUAS",
@@ -1026,7 +1074,8 @@
         "UMUR":1,
         "SCORE":0.0084434716,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP TUMBANG TITI",
@@ -1047,7 +1096,8 @@
         "UMUR":2,
         "SCORE":0.0006567455,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU Sungai Pinyuh",
@@ -1068,7 +1118,8 @@
         "UMUR":2,
         "SCORE":0.0,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN BALAI BEKUAK",
@@ -1089,7 +1140,8 @@
         "UMUR":2,
         "SCORE":0.0,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU BORNEO BUSSINESS ICON",
@@ -1110,6 +1162,7 @@
         "UMUR":2,
         "SCORE":0.0,
         "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI"
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI",
+        "PENGGANTI_LOKASI":"-"
     }
 ]
