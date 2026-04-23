@@ -112,7 +112,7 @@ def main():
                 elif row['SCORE'] <= q_low:
                     return "POTENSI RELOKASI"
                 else:
-                return "OPTIMAL"
+                    return "OPTIMAL"
 
         df['REKOMENDASI'] = df.apply(rekom, axis=1)
         df['REKOMENDASI_DETAIL'] = df['REKOMENDASI']
