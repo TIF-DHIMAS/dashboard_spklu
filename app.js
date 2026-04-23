@@ -114,7 +114,7 @@ function renderAHPTable(data) {
     `;
 
     const status = data.is_consistent
-        ? '<span class="text-success">Konsisten (dibawah 1)</span>'
+        ? '<span class="text-success">Konsisten (dibawah 0.1)</span>'
         : '<span class="text-danger">Tidak Konsisten</span>';
 
     ahpFooter.innerHTML = `Hasil Perhitungan Konsistensi CR: <b>${data.cr}</b> ${status}`;
