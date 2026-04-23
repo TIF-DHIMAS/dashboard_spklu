@@ -102,13 +102,17 @@ def main():
         df['SCORE'] = (score - score.min()) / (score.max() - score.min() + 1e-9)
 
         # ================= REKOMENDASI =================
+        # gunakan distribusi data (quantile)
+        q_high = df['SCORE'].quantile(0.7)
+        q_low = df['SCORE'].quantile(0.3)
+
         def rekom(row):
-            if row['RATA2TRANSAKSI'] >= 30 and row['SCORE'] >= 0.6:
+                if row['SCORE'] >= q_high:
                     return "TAMBAH UNIT"
-            elif row['SCORE'] < 0.3:
+                elif row['SCORE'] <= q_low:
                     return "POTENSI RELOKASI"
-            else:
-                    return "OPTIMAL"
+                else:
+                return "OPTIMAL"
 
         df['REKOMENDASI'] = df.apply(rekom, axis=1)
         df['REKOMENDASI_DETAIL'] = df['REKOMENDASI']
