@@ -103,8 +103,8 @@ def main():
 
         # ================= REKOMENDASI =================
         # gunakan distribusi data (quantile)
-        q_high = df['SCORE'].quantile(0.7)
-        q_low = df['SCORE'].quantile(0.3)
+        q_high = df['SCORE'].quantile(0.8)
+        q_low = df['SCORE'].quantile(0.2)
 
         def rekom(row):
                 if row['SCORE'] >= q_high:
