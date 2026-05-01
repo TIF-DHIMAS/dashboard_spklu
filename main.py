@@ -89,18 +89,38 @@ def main():
 
         mat = df[keys].values
 
-        # ================= TOPSIS =================
+       # ================= TOPSIS =================
+
+        # Normalisasi
         norm = mat / np.sqrt((mat ** 2).sum(axis=0) + 1e-9)
+
+        # Pembobotan
         weighted = norm * weights
 
-        score = (
-            weighted[:, 0] + weighted[:, 1] + weighted[:, 2]
-        ) - (
-            weighted[:, 3] + weighted[:, 4]
-        )
+        # Tentukan benefit & cost
+        benefit_idx = [0, 1, 2]   # Transaksi, EV, Kapasitas
+        cost_idx = [3, 4]         # Biaya, Umur
 
-        df['SCORE'] = (score - score.min()) / (score.max() - score.min() + 1e-9)
+        # Solusi ideal positif & negatif
+        ideal_pos = np.zeros(weighted.shape[1])
+        ideal_neg = np.zeros(weighted.shape[1])
 
+        for i in range(weighted.shape[1]):
+                if i in benefit_idx:
+                    ideal_pos[i] = weighted[:, i].max()
+                    ideal_neg[i] = weighted[:, i].min()
+                else:
+                    ideal_pos[i] = weighted[:, i].min()
+                    ideal_neg[i] = weighted[:, i].max()
+
+        # Jarak ke solusi ideal
+        d_pos = np.sqrt(((weighted - ideal_pos) ** 2).sum(axis=1))
+        d_neg = np.sqrt(((weighted - ideal_neg) ** 2).sum(axis=1))
+
+        # Nilai preferensi (TOPSIS score)
+        score = d_neg / (d_pos + d_neg + 1e-9)
+
+        df['SCORE'] = score
         # ================= REKOMENDASI =================
         # gunakan distribusi data (quantile)
         q_high = df['SCORE'].quantile(0.8)
