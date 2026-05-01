@@ -16,7 +16,7 @@
         "RATA2TRANSAKSI":38,
         "BLTH":"1-2025",
         "UMUR":1,
-        "SCORE":0.8381548855,
+        "SCORE":0.8387008681,
         "REKOMENDASI":"TAMBAH UNIT",
         "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 1061 - SPKLU PLN ULP SANGGAU KOTA, 22.0 kW)",
         "PENGGANTI_LOKASI":"-"
@@ -38,7 +38,7 @@
         "RATA2TRANSAKSI":15,
         "BLTH":"12-2021",
         "UMUR":4,
-        "SCORE":0.3768149915,
+        "SCORE":0.3770162132,
         "REKOMENDASI":"TAMBAH UNIT",
         "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 1133 - SPKLU PLN ULP SUKADANA KANTOR JAGA SIDUK, 22.0 kW)",
         "PENGGANTI_LOKASI":"-"
@@ -60,7 +60,7 @@
         "RATA2TRANSAKSI":6,
         "BLTH":"8-2024",
         "UMUR":2,
-        "SCORE":0.2707823364,
+        "SCORE":0.2701397807,
         "REKOMENDASI":"TAMBAH UNIT",
         "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 1342 - SPKLU PLN Kantor Jaga Senakin, 22.0 kW)",
         "PENGGANTI_LOKASI":"-"
@@ -82,7 +82,7 @@
         "RATA2TRANSAKSI":4,
         "BLTH":"8-2024",
         "UMUR":2,
-        "SCORE":0.2457884757,
+        "SCORE":0.2450791117,
         "REKOMENDASI":"TAMBAH UNIT",
         "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 1071 - SPKLU KJ SELUAS, 22.0 kW)",
         "PENGGANTI_LOKASI":"-"
@@ -104,7 +104,7 @@
         "RATA2TRANSAKSI":9,
         "BLTH":"3-2025",
         "UMUR":1,
-        "SCORE":0.2369552809,
+        "SCORE":0.2367502017,
         "REKOMENDASI":"TAMBAH UNIT",
         "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 844 - SPKLU PLN BALAI BEKUAK, 22.0 kW)",
         "PENGGANTI_LOKASI":"-"
@@ -126,9 +126,9 @@
         "RATA2TRANSAKSI":2,
         "BLTH":"11-2024",
         "UMUR":1,
-        "SCORE":0.2277738803,
+        "SCORE":0.2269312311,
         "REKOMENDASI":"TAMBAH UNIT",
-        "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 739 - SPKLU PLN ULP SEKADAU, 22.0 kW)",
+        "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 839 - SPKLU PLN ULP BENGKAYANG, 22.0 kW)",
         "PENGGANTI_LOKASI":"-"
     },
     {
@@ -148,7 +148,7 @@
         "RATA2TRANSAKSI":2,
         "BLTH":"5-2024",
         "UMUR":2,
-        "SCORE":0.2275271633,
+        "SCORE":0.226782289,
         "REKOMENDASI":"TAMBAH UNIT",
         "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 1064 - SPKLU KANTOR JAGA TEPUAI, 22.0 kW)",
         "PENGGANTI_LOKASI":"-"
@@ -170,7 +170,7 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"12-2024",
         "UMUR":1,
-        "SCORE":0.221171183,
+        "SCORE":0.2203214043,
         "REKOMENDASI":"TAMBAH UNIT",
         "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 1060 - SPKLU PLN ULP PUTUSSIBAU, 25.0 kW)",
         "PENGGANTI_LOKASI":"-"
@@ -192,9 +192,9 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"11-2024",
         "UMUR":1,
-        "SCORE":0.2209162739,
+        "SCORE":0.2200678311,
         "REKOMENDASI":"TAMBAH UNIT",
-        "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 839 - SPKLU PLN ULP BENGKAYANG, 22.0 kW)",
+        "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 1123 - SPKLU PLN ULP SANDAI KANTOR JAGA NANGA TAYAP, 22.0 kW)",
         "PENGGANTI_LOKASI":"-"
     },
     {
@@ -214,7 +214,7 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"11-2024",
         "UMUR":1,
-        "SCORE":0.2209162739,
+        "SCORE":0.2200678311,
         "REKOMENDASI":"TAMBAH UNIT",
         "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 1072 - SPKLU KJ SAJINGAN, 22.0 kW)",
         "PENGGANTI_LOKASI":"-"
@@ -236,7 +236,7 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"6-2024",
         "UMUR":2,
-        "SCORE":0.2207147684,
+        "SCORE":0.2199638275,
         "REKOMENDASI":"TAMBAH UNIT",
         "REKOMENDASI_DETAIL":"TAMBAH UNIT (Dari: 766 - SPKLU Sungai Pinyuh, 22.0 kW)",
         "PENGGANTI_LOKASI":"-"
@@ -257,8 +257,8 @@
         "KBLBB":282,
         "RATA2TRANSAKSI":1,
         "BLTH":"11-2023",
-        "UMUR":2,
-        "SCORE":0.2206984212,
+        "UMUR":3,
+        "SCORE":0.2195090136,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -280,7 +280,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"3-2025",
         "UMUR":1,
-        "SCORE":0.2163428655,
+        "SCORE":0.2155042976,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -302,7 +302,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"6-2023",
         "UMUR":3,
-        "SCORE":0.2151074925,
+        "SCORE":0.2144206966,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -324,7 +324,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"8-2024",
         "UMUR":2,
-        "SCORE":0.2150003055,
+        "SCORE":0.214250078,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -346,7 +346,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"3-2026",
         "UMUR":0,
-        "SCORE":0.1654499146,
+        "SCORE":0.1644886972,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -368,7 +368,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"4-2026",
         "UMUR":0,
-        "SCORE":0.165323427,
+        "SCORE":0.1643634536,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -390,7 +390,7 @@
         "RATA2TRANSAKSI":5,
         "BLTH":"12-2024",
         "UMUR":1,
-        "SCORE":0.1372847386,
+        "SCORE":0.1368468716,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -409,10 +409,10 @@
         "ID_SPKLU":452,
         "BIAYA":50000000,
         "KBLBB":44,
-        "RATA2TRANSAKSI":5,
+        "RATA2TRANSAKSI":3,
         "BLTH":"11-2023",
-        "UMUR":2,
-        "SCORE":0.1350504958,
+        "UMUR":3,
+        "SCORE":0.0893626152,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -434,7 +434,7 @@
         "RATA2TRANSAKSI":3,
         "BLTH":"8-2024",
         "UMUR":2,
-        "SCORE":0.0819091559,
+        "SCORE":0.0815724113,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -456,29 +456,7 @@
         "RATA2TRANSAKSI":2,
         "BLTH":"5-2024",
         "UMUR":2,
-        "SCORE":0.0775637446,
-        "REKOMENDASI":"OPTIMAL",
-        "REKOMENDASI_DETAIL":"OPTIMAL",
-        "PENGGANTI_LOKASI":"-"
-    },
-    {
-        "Nama Stasiun":"SPKLU PLN ULP PEMANGKAT",
-        "Alamat":"Jl. Moh. Hambal, Pemangkat Kota, Kec. Pemangkat, Kabupaten Sambas, Kalimantan Barat 79453",
-        "Latitude":1.175662,
-        "Longitude":108.974173,
-        "Provinsi":"Kalimantan Barat",
-        "Kota":"SAMBAS",
-        "TYPE CHARGE":"MEDIUM CHARGING",
-        "KAPASITAS":7.0,
-        "UP3":"21SKW",
-        "ULP":"21210-PEMANGKAT",
-        "ID_SPKLU":451,
-        "BIAYA":20000000,
-        "KBLBB":7,
-        "RATA2TRANSAKSI":2,
-        "BLTH":"11-2023",
-        "UMUR":2,
-        "SCORE":0.0669716768,
+        "SCORE":0.0770839932,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -500,7 +478,7 @@
         "RATA2TRANSAKSI":2,
         "BLTH":"5-2024",
         "UMUR":2,
-        "SCORE":0.0666036909,
+        "SCORE":0.0661259549,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -522,7 +500,7 @@
         "RATA2TRANSAKSI":2,
         "BLTH":"12-2024",
         "UMUR":1,
-        "SCORE":0.0661109128,
+        "SCORE":0.0651236378,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -544,7 +522,29 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"3-2025",
         "UMUR":1,
-        "SCORE":0.0655126208,
+        "SCORE":0.064438344,
+        "REKOMENDASI":"OPTIMAL",
+        "REKOMENDASI_DETAIL":"OPTIMAL",
+        "PENGGANTI_LOKASI":"-"
+    },
+    {
+        "Nama Stasiun":"SPKLU PLN ULP PEMANGKAT",
+        "Alamat":"Jl. Moh. Hambal, Pemangkat Kota, Kec. Pemangkat, Kabupaten Sambas, Kalimantan Barat 79453",
+        "Latitude":1.175662,
+        "Longitude":108.974173,
+        "Provinsi":"Kalimantan Barat",
+        "Kota":"SAMBAS",
+        "TYPE CHARGE":"MEDIUM CHARGING",
+        "KAPASITAS":7.0,
+        "UP3":"21SKW",
+        "ULP":"21210-PEMANGKAT",
+        "ID_SPKLU":451,
+        "BIAYA":20000000,
+        "KBLBB":7,
+        "RATA2TRANSAKSI":2,
+        "BLTH":"11-2023",
+        "UMUR":3,
+        "SCORE":0.0642850933,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -566,7 +566,7 @@
         "RATA2TRANSAKSI":2,
         "BLTH":"12-2024",
         "UMUR":1,
-        "SCORE":0.0651256102,
+        "SCORE":0.0641311666,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -588,7 +588,7 @@
         "RATA2TRANSAKSI":2,
         "BLTH":"12-2024",
         "UMUR":1,
-        "SCORE":0.0648796161,
+        "SCORE":0.0638839995,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -610,7 +610,7 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"5-2024",
         "UMUR":2,
-        "SCORE":0.0643835832,
+        "SCORE":0.0637965243,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -632,7 +632,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"7-2022",
         "UMUR":4,
-        "SCORE":0.0637508467,
+        "SCORE":0.0635265012,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -654,7 +654,7 @@
         "RATA2TRANSAKSI":2,
         "BLTH":"6-2024",
         "UMUR":2,
-        "SCORE":0.0603056807,
+        "SCORE":0.0598135973,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -675,8 +675,8 @@
         "KBLBB":4,
         "RATA2TRANSAKSI":0,
         "BLTH":"11-2022",
-        "UMUR":3,
-        "SCORE":0.0590232196,
+        "UMUR":4,
+        "SCORE":0.0579166342,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -698,7 +698,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"4-2026",
         "UMUR":0,
-        "SCORE":0.0579811645,
+        "SCORE":0.0560679747,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -720,7 +720,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"11-2024",
         "UMUR":1,
-        "SCORE":0.0565541346,
+        "SCORE":0.0553485505,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -742,7 +742,7 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"11-2024",
         "UMUR":1,
-        "SCORE":0.0555661636,
+        "SCORE":0.0543430848,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -764,7 +764,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"9-2024",
         "UMUR":2,
-        "SCORE":0.0516868056,
+        "SCORE":0.0510079257,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -786,7 +786,7 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"8-2024",
         "UMUR":2,
-        "SCORE":0.0503575119,
+        "SCORE":0.0496958578,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -808,7 +808,7 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"12-2024",
         "UMUR":1,
-        "SCORE":0.0489584027,
+        "SCORE":0.047606632,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -830,7 +830,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"5-2024",
         "UMUR":2,
-        "SCORE":0.0459906619,
+        "SCORE":0.045273389,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -852,29 +852,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"11-2024",
         "UMUR":1,
-        "SCORE":0.0450416731,
-        "REKOMENDASI":"OPTIMAL",
-        "REKOMENDASI_DETAIL":"OPTIMAL",
-        "PENGGANTI_LOKASI":"-"
-    },
-    {
-        "Nama Stasiun":"SPKLU PLN ULP SANDAI KANTOR JAGA NANGA TAYAP",
-        "Alamat":"Jl Lintas Kalimantan \/ Nanga Tayap, Kab. Ketapang Kalimantan Barat 78873",
-        "Latitude":-1.516192,
-        "Longitude":110.563569,
-        "Provinsi":"Kalimantan Barat",
-        "Kota":"KETAPANG",
-        "TYPE CHARGE":"MEDIUM CHARGING",
-        "KAPASITAS":22.0,
-        "UP3":"21KTP",
-        "ULP":"21420-SANDAI",
-        "ID_SPKLU":1123,
-        "BIAYA":50000000,
-        "KBLBB":14,
-        "RATA2TRANSAKSI":0,
-        "BLTH":"11-2024",
-        "UMUR":1,
-        "SCORE":0.0431515809,
+        "SCORE":0.0435908115,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -896,7 +874,7 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"6-2024",
         "UMUR":2,
-        "SCORE":0.0425491354,
+        "SCORE":0.0418198925,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
@@ -918,32 +896,10 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"6-2024",
         "UMUR":2,
-        "SCORE":0.0425491354,
+        "SCORE":0.0418198925,
         "REKOMENDASI":"OPTIMAL",
         "REKOMENDASI_DETAIL":"OPTIMAL",
         "PENGGANTI_LOKASI":"-"
-    },
-    {
-        "Nama Stasiun":"SPKLU PLN ULP PUTUSSIBAU",
-        "Alamat":"Putussibau Kota, Kec. Putussibau Utara, Kabupaten Kapuas Hulu, Kalimantan Barat 78752",
-        "Latitude":0.885324,
-        "Longitude":112.926383,
-        "Provinsi":"Kalimantan Barat",
-        "Kota":"KAPUAS HULU",
-        "TYPE CHARGE":"FAST CHARGING",
-        "KAPASITAS":25.0,
-        "UP3":"21SGU",
-        "ULP":"21330-PUTUSSIBAU",
-        "ID_SPKLU":1060,
-        "BIAYA":50000000,
-        "KBLBB":0,
-        "RATA2TRANSAKSI":0,
-        "BLTH":"11-2024",
-        "UMUR":1,
-        "SCORE":0.0425274521,
-        "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 1304 - SPKLU HOTEL BORNEO PONTIANAK)",
-        "PENGGANTI_LOKASI":"Gantikan oleh: 741 - SPKLU PLN KJ TAYAN"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP SEKADAU",
@@ -962,10 +918,10 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"6-2024",
         "UMUR":2,
-        "SCORE":0.0424161414,
-        "REKOMENDASI":"POTENSI RELOKASI",
-        "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 1024 - SPKLU GOLDEN TULIP)",
-        "PENGGANTI_LOKASI":"Gantikan oleh: 741 - SPKLU PLN KJ TAYAN"
+        "SCORE":0.0416860159,
+        "REKOMENDASI":"OPTIMAL",
+        "REKOMENDASI_DETAIL":"OPTIMAL",
+        "PENGGANTI_LOKASI":"-"
     },
     {
         "Nama Stasiun":"SPKLU PLN ULP BENGKAYANG",
@@ -984,10 +940,54 @@
         "RATA2TRANSAKSI":1,
         "BLTH":"8-2024",
         "UMUR":2,
-        "SCORE":0.0423776775,
+        "SCORE":0.0416474526,
+        "REKOMENDASI":"POTENSI RELOKASI",
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 1024 - SPKLU GOLDEN TULIP)",
+        "PENGGANTI_LOKASI":"Gantikan oleh: 1345 - SPKLU PLN ULP SEKURA"
+    },
+    {
+        "Nama Stasiun":"SPKLU PLN ULP SANDAI KANTOR JAGA NANGA TAYAP",
+        "Alamat":"Jl Lintas Kalimantan \/ Nanga Tayap, Kab. Ketapang Kalimantan Barat 78873",
+        "Latitude":-1.516192,
+        "Longitude":110.563569,
+        "Provinsi":"Kalimantan Barat",
+        "Kota":"KETAPANG",
+        "TYPE CHARGE":"MEDIUM CHARGING",
+        "KAPASITAS":22.0,
+        "UP3":"21KTP",
+        "ULP":"21420-SANDAI",
+        "ID_SPKLU":1123,
+        "BIAYA":50000000,
+        "KBLBB":14,
+        "RATA2TRANSAKSI":0,
+        "BLTH":"11-2024",
+        "UMUR":1,
+        "SCORE":0.0416351308,
         "REKOMENDASI":"POTENSI RELOKASI",
         "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 1038 - SPKLU MITRA ANDA)",
-        "PENGGANTI_LOKASI":"Gantikan oleh: 1345 - SPKLU PLN ULP SEKURA"
+        "PENGGANTI_LOKASI":"Gantikan oleh: 1122 - SPKLU PLN ULP SUKADANA"
+    },
+    {
+        "Nama Stasiun":"SPKLU PLN ULP PUTUSSIBAU",
+        "Alamat":"Putussibau Kota, Kec. Putussibau Utara, Kabupaten Kapuas Hulu, Kalimantan Barat 78752",
+        "Latitude":0.885324,
+        "Longitude":112.926383,
+        "Provinsi":"Kalimantan Barat",
+        "Kota":"KAPUAS HULU",
+        "TYPE CHARGE":"FAST CHARGING",
+        "KAPASITAS":25.0,
+        "UP3":"21SGU",
+        "ULP":"21330-PUTUSSIBAU",
+        "ID_SPKLU":1060,
+        "BIAYA":50000000,
+        "KBLBB":0,
+        "RATA2TRANSAKSI":0,
+        "BLTH":"11-2024",
+        "UMUR":1,
+        "SCORE":0.0409983625,
+        "REKOMENDASI":"POTENSI RELOKASI",
+        "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 1304 - SPKLU HOTEL BORNEO PONTIANAK)",
+        "PENGGANTI_LOKASI":"Gantikan oleh: 739 - SPKLU PLN ULP SEKADAU"
     },
     {
         "Nama Stasiun":"SPKLU KJ SAJINGAN",
@@ -1006,7 +1006,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"11-2024",
         "UMUR":1,
-        "SCORE":0.041765948,
+        "SCORE":0.0402065618,
         "REKOMENDASI":"POTENSI RELOKASI",
         "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 1100 - SPKLU FKIP UTAN)",
         "PENGGANTI_LOKASI":"Gantikan oleh: 1345 - SPKLU PLN ULP SEKURA"
@@ -1028,10 +1028,10 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"11-2024",
         "UMUR":1,
-        "SCORE":0.0414351074,
+        "SCORE":0.0398659968,
         "REKOMENDASI":"POTENSI RELOKASI",
         "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 455 - SPKLU PLN UP3 PONTIANAK)",
-        "PENGGANTI_LOKASI":"Gantikan oleh: 741 - SPKLU PLN KJ TAYAN"
+        "PENGGANTI_LOKASI":"Gantikan oleh: 739 - SPKLU PLN ULP SEKADAU"
     },
     {
         "Nama Stasiun":"SPKLU PLN Kantor Jaga Senakin",
@@ -1050,7 +1050,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"12-2024",
         "UMUR":1,
-        "SCORE":0.0414351074,
+        "SCORE":0.0398659968,
         "REKOMENDASI":"POTENSI RELOKASI",
         "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 838 - SPKLU GUDANG CEMARA)",
         "PENGGANTI_LOKASI":"Gantikan oleh: 907 - SPKLU Borneo Business Icon"
@@ -1072,7 +1072,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"11-2024",
         "UMUR":1,
-        "SCORE":0.0412682731,
+        "SCORE":0.0396953445,
         "REKOMENDASI":"POTENSI RELOKASI",
         "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 845 - SPKLU GOR PLN A.YANI)",
         "PENGGANTI_LOKASI":"Gantikan oleh: 1345 - SPKLU PLN ULP SEKURA"
@@ -1094,10 +1094,10 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"11-2024",
         "UMUR":1,
-        "SCORE":0.0412494368,
+        "SCORE":0.0396765892,
         "REKOMENDASI":"POTENSI RELOKASI",
         "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 53 - SPKLU GAIA MALL)",
-        "PENGGANTI_LOKASI":"Gantikan oleh: 1123 - SPKLU PLN ULP SANDAI KANTOR JAGA NANGA TAYAP"
+        "PENGGANTI_LOKASI":"Gantikan oleh: 1122 - SPKLU PLN ULP SUKADANA"
     },
     {
         "Nama Stasiun":"SPKLU KANTOR JAGA TEPUAI",
@@ -1116,10 +1116,10 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"11-2024",
         "UMUR":1,
-        "SCORE":0.0412494368,
+        "SCORE":0.0396765892,
         "REKOMENDASI":"POTENSI RELOKASI",
         "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 660 - SPKLU PLN ULP SEI JAWI)",
-        "PENGGANTI_LOKASI":"Gantikan oleh: 741 - SPKLU PLN KJ TAYAN"
+        "PENGGANTI_LOKASI":"Gantikan oleh: 739 - SPKLU PLN ULP SEKADAU"
     },
     {
         "Nama Stasiun":"SPKLU PLN BALAI BEKUAK",
@@ -1138,10 +1138,10 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"8-2024",
         "UMUR":2,
-        "SCORE":0.0363138144,
+        "SCORE":0.0354533957,
         "REKOMENDASI":"POTENSI RELOKASI",
         "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 1895 - SPKLU (ARISTA POWER) BYD ARISTA PONTIANAK)",
-        "PENGGANTI_LOKASI":"Gantikan oleh: 1123 - SPKLU PLN ULP SANDAI KANTOR JAGA NANGA TAYAP"
+        "PENGGANTI_LOKASI":"Gantikan oleh: 1122 - SPKLU PLN ULP SUKADANA"
     },
     {
         "Nama Stasiun":"SPKLU Sungai Pinyuh",
@@ -1160,7 +1160,7 @@
         "RATA2TRANSAKSI":0,
         "BLTH":"6-2024",
         "UMUR":2,
-        "SCORE":0.0341606913,
+        "SCORE":0.0332603165,
         "REKOMENDASI":"POTENSI RELOKASI",
         "REKOMENDASI_DETAIL":"POTENSI RELOKASI (Ke: 781 - SPKLU PLN ULP SIANTAN)",
         "PENGGANTI_LOKASI":"Gantikan oleh: 907 - SPKLU Borneo Business Icon"
