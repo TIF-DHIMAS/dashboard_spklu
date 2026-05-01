@@ -2,13 +2,13 @@ import pandas as pd
 import numpy as np
 import json
 import requests
-import math
 from io import StringIO
 
 URL_DATA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=312487335&single=true&output=csv'
 URL_MATRIKS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpro3esJDAdEsGRc-UbAtwqsUony4zn4jb6xtuAfAdEaJjtGLCkZMa75qMzi5-pnUdv3uiGfusHr_t/pub?gid=1780305250&single=true&output=csv'
 
 
+# ================= FETCH DATA =================
 def fetch_csv(url):
     res = requests.get(url)
     if res.status_code != 200 or "html" in res.text.lower():
@@ -16,39 +16,34 @@ def fetch_csv(url):
     return pd.read_csv(StringIO(res.text))
 
 
-def haversine(lat1, lon1, lat2, lon2):
-    R = 6371
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-
-    a = (math.sin(dlat/2)**2 +
-         math.cos(math.radians(lat1)) *
-         math.cos(math.radians(lat2)) *
-         math.sin(dlon/2)**2)
-
-    return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1-a))
-
-
+# ================= MATCHING SCORE =================
 def hitung_skor(donor_df, rec_row):
     df_temp = donor_df.copy()
 
+    # Selisih kapasitas
     df_temp['SELISIH_CAP'] = abs(df_temp['KAPASITAS'] - rec_row['KAPASITAS'])
-    df_temp['NORM_CAP'] = df_temp['SELISIH_CAP'] / (df_temp['SELISIH_CAP'].max() + 1e-9)
+    max_cap = df_temp['SELISIH_CAP'].max()
+    df_temp['NORM_CAP'] = df_temp['SELISIH_CAP'] / (max_cap if max_cap != 0 else 1)
 
-    df_temp['JARAK'] = df_temp.apply(
-        lambda x: haversine(
-            rec_row['Latitude'], rec_row['Longitude'],
-            x['Latitude'], x['Longitude']
-        ), axis=1
+    # Selisih skor TOPSIS
+    df_temp['SELISIH_SCORE'] = abs(df_temp['SCORE'] - rec_row['SCORE'])
+    max_score = df_temp['SELISIH_SCORE'].max()
+    df_temp['NORM_SCORE'] = df_temp['SELISIH_SCORE'] / (max_score if max_score != 0 else 1)
+
+    # Bobot
+    alpha = 0.6
+    beta = 0.4
+
+    # Skor akhir
+    df_temp['SKOR_AKHIR'] = (
+        alpha * df_temp['NORM_CAP'] +
+        beta * df_temp['NORM_SCORE']
     )
-    df_temp['NORM_JARAK'] = df_temp['JARAK'] / (df_temp['JARAK'].max() + 1e-9)
-
-    alpha, beta = 0.6, 0.4
-    df_temp['SKOR_AKHIR'] = alpha * df_temp['NORM_CAP'] + beta * df_temp['NORM_JARAK']
 
     return df_temp.sort_values('SKOR_AKHIR')
 
 
+# ================= MAIN =================
 def main():
     try:
         print("START")
@@ -70,6 +65,10 @@ def main():
         ci = (lambda_max - n) / (n - 1)
         cr = ci / 1.12
 
+        # Validasi CR
+        if cr >= 0.1:
+            raise Exception("CR tidak konsisten")
+
         # ================= DATA =================
         df = fetch_csv(URL_DATA)
         df.columns = df.columns.str.strip()
@@ -85,11 +84,14 @@ def main():
         keys = list(mapping.keys())
 
         for col in keys:
-            df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '.'), errors='coerce').fillna(0)
+            df[col] = pd.to_numeric(
+                df[col].astype(str).str.replace(',', '.'),
+                errors='coerce'
+            ).fillna(0)
 
         mat = df[keys].values
 
-       # ================= TOPSIS =================
+        # ================= TOPSIS =================
 
         # Normalisasi
         norm = mat / np.sqrt((mat ** 2).sum(axis=0) + 1e-9)
@@ -97,47 +99,44 @@ def main():
         # Pembobotan
         weighted = norm * weights
 
-        # Tentukan benefit & cost
-        benefit_idx = [0, 1, 2]   # Transaksi, EV, Kapasitas
-        cost_idx = [3, 4]         # Biaya, Umur
+        # Benefit dan Cost
+        benefit_idx = [0, 1, 2]  # Transaksi, EV, Kapasitas
 
-        # Solusi ideal positif & negatif
         ideal_pos = np.zeros(weighted.shape[1])
         ideal_neg = np.zeros(weighted.shape[1])
 
         for i in range(weighted.shape[1]):
-                if i in benefit_idx:
-                    ideal_pos[i] = weighted[:, i].max()
-                    ideal_neg[i] = weighted[:, i].min()
-                else:
-                    ideal_pos[i] = weighted[:, i].min()
-                    ideal_neg[i] = weighted[:, i].max()
+            if i in benefit_idx:
+                ideal_pos[i] = weighted[:, i].max()
+                ideal_neg[i] = weighted[:, i].min()
+            else:
+                ideal_pos[i] = weighted[:, i].min()
+                ideal_neg[i] = weighted[:, i].max()
 
         # Jarak ke solusi ideal
         d_pos = np.sqrt(((weighted - ideal_pos) ** 2).sum(axis=1))
         d_neg = np.sqrt(((weighted - ideal_neg) ** 2).sum(axis=1))
 
-        # Nilai preferensi (TOPSIS score)
-        score = d_neg / (d_pos + d_neg + 1e-9)
+        # Nilai preferensi
+        df['SCORE'] = d_neg / (d_pos + d_neg + 1e-9)
 
-        df['SCORE'] = score
-        # ================= REKOMENDASI =================
-        # gunakan distribusi data (quantile)
+        # ================= QUANTILE =================
         q_high = df['SCORE'].quantile(0.8)
         q_low = df['SCORE'].quantile(0.2)
 
         def rekom(row):
-                if row['SCORE'] >= q_high:
-                    return "TAMBAH UNIT"
-                elif row['SCORE'] <= q_low:
-                    return "POTENSI RELOKASI"
-                else:
-                    return "OPTIMAL"
+            if row['SCORE'] >= q_high:
+                return "TAMBAH UNIT"
+            elif row['SCORE'] <= q_low:
+                return "POTENSI RELOKASI"
+            else:
+                return "OPTIMAL"
 
         df['REKOMENDASI'] = df.apply(rekom, axis=1)
         df['REKOMENDASI_DETAIL'] = df['REKOMENDASI']
         df['PENGGANTI_LOKASI'] = "-"
 
+        # ================= MATCHING =================
         penerima = df[df['REKOMENDASI'] == 'TAMBAH UNIT']
         donor = df[df['REKOMENDASI'] == 'POTENSI RELOKASI']
 
@@ -145,6 +144,7 @@ def main():
 
         for i, rec in penerima.iterrows():
 
+            # Prioritas UP3 sama
             donor_same = donor[
                 (donor['UP3'] == rec['UP3']) &
                 (~donor.index.isin(used_donor))
@@ -159,26 +159,29 @@ def main():
                 if not donor_lain.empty:
                     kandidat = hitung_skor(donor_lain, rec)
 
+            # Jika tidak ada donor
             if kandidat is None or kandidat.empty:
+                df.loc[i, 'REKOMENDASI_DETAIL'] = "TAMBAH UNIT (Tanpa donor tersedia)"
                 continue
 
             best = kandidat.iloc[0]
             used_donor.add(best.name)
 
-            # update penerima
+            # Update penerima
             df.loc[i, 'REKOMENDASI_DETAIL'] = (
                 f"TAMBAH UNIT (Dari: {best['ID_SPKLU']} - {best['Nama Stasiun']}, {best['KAPASITAS']} kW)"
             )
 
-            # update donor
+            # Update donor
             df.loc[best.name, 'REKOMENDASI_DETAIL'] = (
                 f"POTENSI RELOKASI (Ke: {rec['ID_SPKLU']} - {rec['Nama Stasiun']})"
             )
 
-            # cari pengganti (SCORE terendah di UP3 yang sama)
+            # Cari pengganti
             kandidat_pengganti = df[
                 (df['UP3'] == best['UP3']) &
-                (df.index != best.name)
+                (df.index != best.name) &
+                (df['REKOMENDASI'] != 'POTENSI RELOKASI')
             ]
 
             if not kandidat_pengganti.empty:
@@ -188,6 +191,7 @@ def main():
                     f"Gantikan oleh: {pengganti['ID_SPKLU']} - {pengganti['Nama Stasiun']}"
                 )
 
+        # Urutkan hasil
         df = df.sort_values(by='SCORE', ascending=False)
 
         # ================= OUTPUT =================
