@@ -215,8 +215,8 @@ function renderDashboard(data) {
             ).bindPopup(`
                 <b>${display}</b><br>
                 ULP: ${ulp}<br>
-                Transaksi: ${item.RATA2TRANSAKSI} Kali<br>
-                Kapasitas: ${item.KAPASITAS} kW<br>
+                Rata2 Transaksi: ${item.RATA2TRANSAKSI} Kali<br>
+                Kapasitas: ${item.KAPASITAS} kW / ${item.'TYPE CHARGE'}<br>
                 Umur: ${item.UMUR} Tahun<br>
                 Skor: ${score}<br>
                 <b>${item.REKOMENDASI_DETAIL || item.REKOMENDASI}</b><br>
