@@ -7,5 +7,7 @@
         "Kapasitas": 0.127209,
         "Biaya": 0.078661,
         "Umur": 0.051061
-    }
+    },
+    "keterangan_donor_cadangan": "Diambil dari OPTIMAL skor terendah (mendekati batas relokasi)",
+    "keterangan_pengganti": "Dicari dari RELOKASI lain di wilayah yang sama untuk ditingkatkan"
 }
